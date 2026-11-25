@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { useAuth } from "./features/auth/useAuth";
-import { AdminLoginPage, EmployeeLoginPage } from "./features/auth/LoginPages";
+import { AdminLoginPage } from "./features/auth/pages/AdminLoginPage";
+import { EmployeeLoginPage } from "./features/auth/pages/EmployeeLoginPage";
 
 import AdminLayout from "./layouts/admin/AdminLayout";
 import EmployeeLayout from "./layouts/employee/EmployeeLayout";
