@@ -67,7 +67,7 @@ interface EmployeeForm {
 const PAGE_SIZE = 20;
 
 const fieldClassName =
-  "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-indigo-400";
+  "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#F40026] focus:ring-2 focus:ring-[#F40026]/10";
 
 const initialForm: EmployeeForm = {
   employeeCode: "",
@@ -91,6 +91,15 @@ function getApiError(error: unknown): string {
   }
 
   return "Something went wrong. Please try again.";
+}
+
+function getInitials(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
 }
 
 export default function EmployeeManagementPage() {
@@ -227,12 +236,22 @@ export default function EmployeeManagementPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
+    <div className="w-full space-y-7">
       {/* Page heading */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Employees</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <div className="mb-2 flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-[#F40026]" />
+            <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+              People Management
+            </span>
+          </div>
+
+          <h1 className="text-2xl font-bold tracking-tight text-[#030708] sm:text-3xl">
+            Employees
+          </h1>
+
+          <p className="mt-1.5 text-sm text-slate-500">
             Manage employee profiles and employment information.
           </p>
         </div>
@@ -244,144 +263,155 @@ export default function EmployeeManagementPage() {
             setFormError("");
             createEmployeeMutation.reset();
           }}
-          className="flex h-10 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white transition hover:bg-indigo-700"
+          className="inline-flex h-10 items-center justify-center gap-2 self-start rounded-lg bg-[#F40026] px-4 text-sm font-semibold text-white transition hover:bg-red-700 sm:self-auto"
         >
-          {showForm ? <BiX size={17} /> : <BiPlus size={17} />}
+          {showForm ? <BiX size={18} /> : <BiPlus size={18} />}
           {showForm ? "Close Form" : "Add Employee"}
         </button>
       </div>
 
       {/* Create employee form */}
       {showForm && (
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-          <div className="mb-5">
-            <h2 className="text-lg font-semibold text-slate-900">
-              Create Employee
-            </h2>
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
+            <h2 className="font-semibold text-[#030708]">Create Employee</h2>
             <p className="mt-1 text-sm text-slate-500">
               Create an employee profile and login account together.
             </p>
           </div>
 
-          {(formError || createEmployeeMutation.isError) && (
-            <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-              {formError || getApiError(createEmployeeMutation.error)}
-            </div>
-          )}
+          <form onSubmit={handleCreateEmployee} className="p-5 sm:p-6">
+            {(formError || createEmployeeMutation.isError) && (
+              <div className="mb-6 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                <span className="font-semibold">!</span>
+                <p>{formError || getApiError(createEmployeeMutation.error)}</p>
+              </div>
+            )}
 
-          <form onSubmit={handleCreateEmployee}>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              <FormField label="Employee Code" required>
-                <input
-                  required
-                  minLength={2}
-                  maxLength={30}
-                  value={form.employeeCode}
-                  onChange={(event) =>
-                    updateForm("employeeCode", event.target.value)
-                  }
-                  placeholder="EMP002"
-                  className={fieldClassName}
-                />
-              </FormField>
+            {/* Employee information */}
+            <div>
+              <div className="mb-5">
+                <h3 className="text-sm font-semibold text-[#030708]">
+                  Employee Information
+                </h3>
+                <p className="mt-1 text-xs text-slate-500">
+                  Basic information and employment details.
+                </p>
+              </div>
 
-              <FormField label="Full Name" required>
-                <input
-                  required
-                  minLength={2}
-                  maxLength={100}
-                  value={form.fullName}
-                  onChange={(event) =>
-                    updateForm("fullName", event.target.value)
-                  }
-                  placeholder="Employee full name"
-                  className={fieldClassName}
-                />
-              </FormField>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <FormField label="Employee Code" required>
+                  <input
+                    required
+                    minLength={2}
+                    maxLength={30}
+                    value={form.employeeCode}
+                    onChange={(event) =>
+                      updateForm("employeeCode", event.target.value)
+                    }
+                    placeholder="EMP002"
+                    className={fieldClassName}
+                  />
+                </FormField>
 
-              <FormField label="Designation" required>
-                <input
-                  required
-                  minLength={2}
-                  maxLength={100}
-                  value={form.designation}
-                  onChange={(event) =>
-                    updateForm("designation", event.target.value)
-                  }
-                  placeholder="Software Engineer"
-                  className={fieldClassName}
-                />
-              </FormField>
+                <FormField label="Full Name" required>
+                  <input
+                    required
+                    minLength={2}
+                    maxLength={100}
+                    value={form.fullName}
+                    onChange={(event) =>
+                      updateForm("fullName", event.target.value)
+                    }
+                    placeholder="Employee full name"
+                    className={fieldClassName}
+                  />
+                </FormField>
 
-              <FormField label="Official Email" required>
-                <input
-                  required
-                  type="email"
-                  maxLength={254}
-                  value={form.officialEmail}
-                  onChange={(event) =>
-                    updateForm("officialEmail", event.target.value)
-                  }
-                  placeholder="employee@company.com"
-                  className={fieldClassName}
-                />
-              </FormField>
+                <FormField label="Designation" required>
+                  <input
+                    required
+                    minLength={2}
+                    maxLength={100}
+                    value={form.designation}
+                    onChange={(event) =>
+                      updateForm("designation", event.target.value)
+                    }
+                    placeholder="Software Engineer"
+                    className={fieldClassName}
+                  />
+                </FormField>
 
-              <FormField label="Phone Number" required>
-                <input
-                  required
-                  type="tel"
-                  inputMode="numeric"
-                  maxLength={11}
-                  pattern="01[3-9][0-9]{8}"
-                  title="Enter an 11-digit Bangladeshi mobile number."
-                  value={form.phoneNumber}
-                  onChange={(event) =>
-                    updateForm("phoneNumber", event.target.value)
-                  }
-                  placeholder="01712345678"
-                  className={fieldClassName}
-                />
-              </FormField>
+                <FormField label="Official Email" required>
+                  <input
+                    required
+                    type="email"
+                    maxLength={254}
+                    value={form.officialEmail}
+                    onChange={(event) =>
+                      updateForm("officialEmail", event.target.value)
+                    }
+                    placeholder="employee@company.com"
+                    className={fieldClassName}
+                  />
+                </FormField>
 
-              <FormField label="Department">
-                <input
-                  minLength={2}
-                  maxLength={80}
-                  value={form.department}
-                  onChange={(event) =>
-                    updateForm("department", event.target.value)
-                  }
-                  placeholder="Engineering"
-                  className={fieldClassName}
-                />
-              </FormField>
+                <FormField label="Phone Number" required>
+                  <input
+                    required
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={11}
+                    pattern="01[3-9][0-9]{8}"
+                    title="Enter an 11-digit Bangladeshi mobile number."
+                    value={form.phoneNumber}
+                    onChange={(event) =>
+                      updateForm("phoneNumber", event.target.value)
+                    }
+                    placeholder="01712345678"
+                    className={fieldClassName}
+                  />
+                </FormField>
 
-              <FormField label="Employment Type" required>
-                <select
-                  required
-                  value={form.employmentType}
-                  onChange={(event) =>
-                    updateForm(
-                      "employmentType",
-                      event.target.value as EmploymentType,
-                    )
-                  }
-                  className={fieldClassName}
-                >
-                  <option value="office">Office</option>
-                  <option value="remote">Remote</option>
-                </select>
-              </FormField>
+                <FormField label="Department">
+                  <input
+                    minLength={2}
+                    maxLength={80}
+                    value={form.department}
+                    onChange={(event) =>
+                      updateForm("department", event.target.value)
+                    }
+                    placeholder="Engineering"
+                    className={fieldClassName}
+                  />
+                </FormField>
+
+                <FormField label="Employment Type" required>
+                  <select
+                    required
+                    value={form.employmentType}
+                    onChange={(event) =>
+                      updateForm(
+                        "employmentType",
+                        event.target.value as EmploymentType,
+                      )
+                    }
+                    className={fieldClassName}
+                  >
+                    <option value="office">Office</option>
+                    <option value="remote">Remote</option>
+                  </select>
+                </FormField>
+              </div>
             </div>
 
             {/* Login credentials */}
-            <div className="mt-7 border-t border-slate-100 pt-6">
+            <div className="mt-8 border-t border-slate-100 pt-6">
               <div className="mb-5">
-                <h3 className="text-base font-semibold text-slate-900">
+                <h3 className="text-sm font-semibold text-[#030708]">
                   Login Credentials
                 </h3>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-xs text-slate-500">
                   Set the employee's initial password. They can change it later.
                 </p>
               </div>
@@ -409,7 +439,7 @@ export default function EmployeeManagementPage() {
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-[#030708]"
                     >
                       {showPassword ? (
                         <FiEyeOff size={17} />
@@ -446,7 +476,7 @@ export default function EmployeeManagementPage() {
                           ? "Hide confirm password"
                           : "Show confirm password"
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-[#030708]"
                     >
                       {showConfirmPassword ? (
                         <FiEyeOff size={17} />
@@ -459,12 +489,13 @@ export default function EmployeeManagementPage() {
               </div>
             </div>
 
-            <div className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
+            {/* Form actions */}
+            <div className="mt-7 flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={closeForm}
                 disabled={createEmployeeMutation.isPending}
-                className="h-10 rounded-xl border border-slate-200 px-5 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                className="h-10 rounded-lg border border-slate-200 px-5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -472,7 +503,7 @@ export default function EmployeeManagementPage() {
               <button
                 type="submit"
                 disabled={createEmployeeMutation.isPending}
-                className="flex h-10 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#F40026] px-5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {createEmployeeMutation.isPending && (
                   <FiRefreshCw size={16} className="animate-spin" />
@@ -486,29 +517,30 @@ export default function EmployeeManagementPage() {
         </section>
       )}
 
-      {/* Employee list */}
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-slate-100 p-5 lg:flex-row lg:items-center lg:justify-between">
+      {/* Employee directory */}
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="flex flex-col gap-4 border-b border-slate-200 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="font-semibold text-slate-900">Employee Directory</h2>
+            <h2 className="font-semibold text-[#030708]">Employee Directory</h2>
             <p className="mt-1 text-sm text-slate-500">
               {pagination
                 ? `${pagination.total} employee profiles`
-                : "Browse employee profiles"}
+                : "Browse and manage employee profiles"}
             </p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative">
               <BiSearch
-                size={17}
+                size={18}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search loaded employees..."
-                className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none transition focus:border-indigo-400 sm:w-64"
+                aria-label="Search loaded employees"
+                className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#F40026] focus:ring-2 focus:ring-[#F40026]/10 sm:w-64"
               />
             </div>
 
@@ -517,7 +549,8 @@ export default function EmployeeManagementPage() {
               onChange={(event) =>
                 changeStatusFilter(event.target.value as StatusFilter)
               }
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-indigo-400"
+              aria-label="Filter employees by status"
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-[#F40026] focus:ring-2 focus:ring-[#F40026]/10"
             >
               <option value="active">Active employees</option>
               <option value="inactive">Inactive employees</option>
@@ -529,7 +562,7 @@ export default function EmployeeManagementPage() {
               onClick={() => void employeesQuery.refetch()}
               disabled={employeesQuery.isFetching}
               aria-label="Refresh employees"
-              className="flex h-10 items-center justify-center rounded-xl border border-slate-200 px-3 text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+              className="flex h-10 items-center justify-center rounded-lg border border-slate-200 px-3 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <FiRefreshCw
                 size={17}
@@ -540,16 +573,15 @@ export default function EmployeeManagementPage() {
         </div>
 
         {employeesQuery.isLoading ? (
-          <div className="p-12 text-center">
-            <FiRefreshCw
-              size={22}
-              className="mx-auto animate-spin text-indigo-600"
-            />
-            <p className="mt-3 text-sm text-slate-500">Loading employees...</p>
+          <div className="flex flex-col items-center justify-center px-4 py-16">
+            <FiRefreshCw size={23} className="animate-spin text-[#F40026]" />
+            <p className="mt-3 text-sm font-medium text-slate-600">
+              Loading employees...
+            </p>
           </div>
         ) : employeesQuery.isError ? (
-          <div className="p-10 text-center">
-            <p className="font-semibold text-red-700">
+          <div className="px-4 py-14 text-center">
+            <p className="font-semibold text-[#030708]">
               Unable to load employees
             </p>
             <p className="mt-1 text-sm text-slate-500">
@@ -558,15 +590,17 @@ export default function EmployeeManagementPage() {
             <button
               type="button"
               onClick={() => void employeesQuery.refetch()}
-              className="mt-4 text-sm font-semibold text-indigo-600 hover:underline"
+              className="mt-4 rounded-lg bg-[#F40026] px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
             >
               Try again
             </button>
           </div>
         ) : filteredEmployees.length === 0 ? (
-          <div className="p-12 text-center">
-            <FaUsers size={30} className="mx-auto text-slate-300" />
-            <p className="mt-3 font-semibold text-slate-800">
+          <div className="px-4 py-16 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+              <FaUsers size={21} />
+            </div>
+            <p className="mt-4 font-semibold text-[#030708]">
               No employees found
             </p>
             <p className="mt-1 text-sm text-slate-500">
@@ -592,15 +626,16 @@ export default function EmployeeManagementPage() {
                   {filteredEmployees.map((employee) => (
                     <tr
                       key={employee._id}
-                      className="transition hover:bg-slate-50/70"
+                      className="transition-colors hover:bg-slate-50/70"
                     >
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-sm font-bold text-indigo-700">
-                            {employee.fullName.charAt(0).toUpperCase()}
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#030708] text-xs font-bold text-white">
+                            {getInitials(employee.fullName)}
                           </div>
+
                           <div>
-                            <p className="text-sm font-semibold text-slate-900">
+                            <p className="text-sm font-semibold text-[#030708]">
                               {employee.fullName}
                             </p>
                             <p className="mt-1 text-xs text-slate-500">
@@ -624,19 +659,26 @@ export default function EmployeeManagementPage() {
                       </td>
 
                       <td className="px-5 py-4">
-                        <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium capitalize text-slate-600">
+                        <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium capitalize text-slate-600">
                           {employee.employmentType}
                         </span>
                       </td>
 
                       <td className="px-5 py-4">
                         <span
-                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
                             employee.isActive
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-red-50 text-red-700"
+                              ? "bg-slate-100 text-slate-700"
+                              : "bg-red-50 text-[#F40026]"
                           }`}
                         >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              employee.isActive
+                                ? "bg-slate-500"
+                                : "bg-[#F40026]"
+                            }`}
+                          />
                           {employee.isActive ? "Active" : "Inactive"}
                         </span>
                       </td>
@@ -644,7 +686,7 @@ export default function EmployeeManagementPage() {
                       <td className="px-5 py-4 text-right">
                         <Link
                           to={`/admin/employees/${employee._id}`}
-                          className="text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                          className="text-sm font-semibold text-[#F40026] transition hover:text-red-700"
                         >
                           View profile
                         </Link>
@@ -655,10 +697,17 @@ export default function EmployeeManagementPage() {
               </table>
             </div>
 
-            <div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            {/* Pagination */}
+            <div className="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-slate-500">
-                Showing {skip + 1}–{skip + employees.length} of{" "}
-                {pagination?.total ?? 0}
+                Showing{" "}
+                <span className="font-semibold text-[#030708]">
+                  {skip + 1}–{skip + employees.length}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-[#030708]">
+                  {pagination?.total ?? 0}
+                </span>
               </p>
 
               <div className="flex items-center gap-2">
@@ -668,9 +717,9 @@ export default function EmployeeManagementPage() {
                   onClick={() =>
                     setSkip((current) => Math.max(0, current - PAGE_SIZE))
                   }
-                  className="flex h-9 items-center gap-1 rounded-lg border border-slate-200 px-3 text-sm text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  <BiChevronLeft size={16} />
+                  <BiChevronLeft size={17} />
                   Previous
                 </button>
 
@@ -678,10 +727,10 @@ export default function EmployeeManagementPage() {
                   type="button"
                   disabled={!pagination?.hasMore}
                   onClick={() => setSkip((current) => current + PAGE_SIZE)}
-                  className="flex h-9 items-center gap-1 rounded-lg border border-slate-200 px-3 text-sm text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Next
-                  <BiChevronRight size={16} />
+                  <BiChevronRight size={17} />
                 </button>
               </div>
             </div>
@@ -705,7 +754,7 @@ function FormField({
     <label className="block">
       <span className="mb-2 block text-sm font-medium text-slate-700">
         {label}
-        {required && <span className="ml-1 text-red-500">*</span>}
+        {required && <span className="ml-1 text-[#F40026]">*</span>}
       </span>
       {children}
     </label>

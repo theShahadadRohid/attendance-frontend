@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   FiCalendar,
@@ -64,19 +64,25 @@ interface HolidayForm {
 }
 
 const DAYS = [
-  { value: 0, label: "Sunday" },
-  { value: 1, label: "Monday" },
-  { value: 2, label: "Tuesday" },
-  { value: 3, label: "Wednesday" },
-  { value: 4, label: "Thursday" },
-  { value: 5, label: "Friday" },
-  { value: 6, label: "Saturday" },
+  { value: 0, label: "Sun" },
+  { value: 1, label: "Mon" },
+  { value: 2, label: "Tue" },
+  { value: 3, label: "Wed" },
+  { value: 4, label: "Thu" },
+  { value: 5, label: "Fri" },
+  { value: 6, label: "Sat" },
 ];
 
 const inputClass =
-  "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+  "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#F40026] focus:ring-2 focus:ring-[#F40026]/10";
 
-const labelClass = "mb-1.5 block text-sm font-medium text-slate-700";
+const labelClass = "mb-1 block text-xs font-semibold text-slate-600";
+
+const defaultHolidayForm: HolidayForm = {
+  date: "",
+  name: "",
+  description: "",
+};
 
 function getErrorMessage(error: unknown): string {
   const axiosError = error as {
@@ -99,33 +105,32 @@ function Section({
   title,
   description,
   children,
+  action,
 }: {
   title: string;
   description?: string;
-  children: React.ReactNode;
+  children: ReactNode;
+  action?: ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-5">
-        <h2 className="font-semibold text-slate-800">{title}</h2>
-        {description && (
-          <p className="mt-1 text-sm text-slate-500">{description}</p>
-        )}
+    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h2 className="text-sm font-bold text-[#030708]">{title}</h2>
+          {description && (
+            <p className="mt-0.5 text-xs text-slate-500">{description}</p>
+          )}
+        </div>
+        {action}
       </div>
       {children}
     </section>
   );
 }
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div>
+    <div className="min-w-0">
       <label className={labelClass}>{label}</label>
       {children}
     </div>
@@ -142,23 +147,39 @@ function Toggle({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-3">
+    <label className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-slate-100 px-3 py-2.5 transition hover:bg-slate-50">
       <input
         type="checkbox"
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}
-        className="h-4 w-4 rounded border-slate-300 accent-blue-600"
+        className="h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 accent-[#F40026]"
       />
-      <span className="text-sm text-slate-700">{label}</span>
+      <span className="text-xs font-medium text-slate-700">{label}</span>
     </label>
   );
 }
 
-const defaultHolidayForm: HolidayForm = {
-  date: "",
-  name: "",
-  description: "",
-};
+function TimeField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <Field label={label}>
+      <input
+        type="time"
+        className={inputClass}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        required
+      />
+    </Field>
+  );
+}
 
 export default function ScheduleManagementPage() {
   const queryClient = useQueryClient();
@@ -411,7 +432,7 @@ export default function ScheduleManagementPage() {
 
   if (scheduleQuery.isError || holidaysQuery.isError) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+      <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
         <p>{getErrorMessage(scheduleQuery.error || holidaysQuery.error)}</p>
         <button
           type="button"
@@ -419,7 +440,7 @@ export default function ScheduleManagementPage() {
             void scheduleQuery.refetch();
             void holidaysQuery.refetch();
           }}
-          className="mt-3 font-medium underline"
+          className="mt-2 font-semibold underline"
         >
           Try again
         </button>
@@ -434,35 +455,44 @@ export default function ScheduleManagementPage() {
     createHolidayMutation.isPending || updateHolidayMutation.isPending;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800">
-          Schedule & Holidays
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Configure company working days, attendance timings, and holidays.
-        </p>
+    <div className="space-y-4">
+      {/* Page heading */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-[#F40026]" />
+            <h1 className="text-xl font-bold text-[#030708]">
+              Schedule & Holidays
+            </h1>
+          </div>
+          <p className="mt-1 text-xs text-slate-500">
+            Manage working days, attendance timings, and company holidays.
+          </p>
+        </div>
       </div>
 
+      {/* Feedback */}
       {(pageError || successMessage) && (
         <div
-          className={`rounded-lg border p-3 text-sm ${
+          role="status"
+          className={`rounded-lg border px-3 py-2.5 text-sm ${
             pageError
               ? "border-red-200 bg-red-50 text-red-700"
-              : "border-green-200 bg-green-50 text-green-700"
+              : "border-slate-200 bg-slate-50 text-slate-700"
           }`}
         >
           {pageError || successMessage}
         </div>
       )}
 
-      <form onSubmit={handleScheduleSubmit} className="space-y-6">
+      {/* Schedule settings */}
+      <form onSubmit={handleScheduleSubmit} className="space-y-3">
         <Section
           title="Company Settings"
-          description="Set the timezone and the regular working days."
+          description="Set your company timezone and regular working days."
         >
-          <div className="grid gap-5 md:grid-cols-2">
-            <Field label="Timezone">
+          <div className="grid gap-4 sm:grid-cols-[minmax(220px,1fr)_2fr]">
+            <Field label="Company Timezone">
               <select
                 className={inputClass}
                 value={scheduleForm.timeZone}
@@ -478,93 +508,67 @@ export default function ScheduleManagementPage() {
                 <option value="UTC">UTC</option>
               </select>
             </Field>
-          </div>
 
-          <div className="mt-5">
-            <label className={labelClass}>Working Days</label>
-            <div className="flex flex-wrap gap-2">
-              {DAYS.map((day) => {
-                const selected = scheduleForm.workingDays.includes(day.value);
+            <div>
+              <label className={labelClass}>Working Days</label>
+              <div className="flex flex-wrap gap-1.5">
+                {DAYS.map((day) => {
+                  const selected = scheduleForm.workingDays.includes(day.value);
 
-                return (
-                  <button
-                    key={day.value}
-                    type="button"
-                    onClick={() => toggleWorkingDay(day.value)}
-                    className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
-                      selected
-                        ? "border-blue-600 bg-blue-600 text-white"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    {day.label}
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={day.value}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => toggleWorkingDay(day.value)}
+                      className={`min-w-12 rounded-lg border px-3 py-2 text-xs font-semibold transition ${
+                        selected
+                          ? "border-[#F40026] bg-[#F40026] text-white"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50"
+                      }`}
+                    >
+                      {day.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {scheduleForm.workingDays.length === 0 && (
+                <p className="mt-1.5 text-xs text-red-600">
+                  Select at least one working day.
+                </p>
+              )}
             </div>
-            {scheduleForm.workingDays.length === 0 && (
-              <p className="mt-2 text-xs text-red-600">
-                Select at least one working day.
-              </p>
-            )}
           </div>
         </Section>
 
         <Section
           title="Check-in Rules"
-          description="Configure office start time and late attendance rules."
+          description="Define office start time and late attendance thresholds."
         >
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Field label="Office Start Time">
-              <input
-                type="time"
-                className={inputClass}
-                value={scheduleForm.checkIn.officeStartTime}
-                onChange={(event) =>
-                  updateCheckIn("officeStartTime", event.target.value)
-                }
-                required
-              />
-            </Field>
-
-            <Field label="On-time Until">
-              <input
-                type="time"
-                className={inputClass}
-                value={scheduleForm.checkIn.onTimeUntil}
-                onChange={(event) =>
-                  updateCheckIn("onTimeUntil", event.target.value)
-                }
-                required
-              />
-            </Field>
-
-            <Field label="Yellow Late Until">
-              <input
-                type="time"
-                className={inputClass}
-                value={scheduleForm.checkIn.yellowLateUntil}
-                onChange={(event) =>
-                  updateCheckIn("yellowLateUntil", event.target.value)
-                }
-                required
-              />
-            </Field>
-
-            <Field label="Red Late From">
-              <input
-                type="time"
-                className={inputClass}
-                value={scheduleForm.checkIn.redLateFrom}
-                onChange={(event) =>
-                  updateCheckIn("redLateFrom", event.target.value)
-                }
-                required
-              />
-            </Field>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <TimeField
+              label="Office Start Time"
+              value={scheduleForm.checkIn.officeStartTime}
+              onChange={(value) => updateCheckIn("officeStartTime", value)}
+            />
+            <TimeField
+              label="On-time Until"
+              value={scheduleForm.checkIn.onTimeUntil}
+              onChange={(value) => updateCheckIn("onTimeUntil", value)}
+            />
+            <TimeField
+              label="Yellow Late Until"
+              value={scheduleForm.checkIn.yellowLateUntil}
+              onChange={(value) => updateCheckIn("yellowLateUntil", value)}
+            />
+            <TimeField
+              label="Red Late From"
+              value={scheduleForm.checkIn.redLateFrom}
+              onChange={(value) => updateCheckIn("redLateFrom", value)}
+            />
           </div>
 
-          <div className="mt-5">
+          <div className="mt-3 border-t border-slate-100 pt-3">
             <Toggle
               label="Require a reason for late check-in"
               checked={scheduleForm.checkIn.lateReasonRequired}
@@ -575,71 +579,37 @@ export default function ScheduleManagementPage() {
 
         <Section
           title="Check-out Rules"
-          description="Configure checkout timing and automatic checkout behavior."
+          description="Configure checkout thresholds and automatic checkout behavior."
         >
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Field label="Early Checkout Before">
-              <input
-                type="time"
-                className={inputClass}
-                value={scheduleForm.checkOut.earlyCheckoutBefore}
-                onChange={(event) =>
-                  updateCheckOut("earlyCheckoutBefore", event.target.value)
-                }
-                required
-              />
-            </Field>
-
-            <Field label="Normal Checkout Until">
-              <input
-                type="time"
-                className={inputClass}
-                value={scheduleForm.checkOut.normalCheckoutUntil}
-                onChange={(event) =>
-                  updateCheckOut("normalCheckoutUntil", event.target.value)
-                }
-                required
-              />
-            </Field>
-
-            <Field label="Note Required After">
-              <input
-                type="time"
-                className={inputClass}
-                value={scheduleForm.checkOut.noteRequiredAfter}
-                onChange={(event) =>
-                  updateCheckOut("noteRequiredAfter", event.target.value)
-                }
-                required
-              />
-            </Field>
-
-            <Field label="Latest Checkout Time">
-              <input
-                type="time"
-                className={inputClass}
-                value={scheduleForm.checkOut.latestCheckoutTime}
-                onChange={(event) =>
-                  updateCheckOut("latestCheckoutTime", event.target.value)
-                }
-                required
-              />
-            </Field>
-
-            <Field label="Automatic Checkout Time">
-              <input
-                type="time"
-                className={inputClass}
-                value={scheduleForm.checkOut.autoCheckoutTime}
-                onChange={(event) =>
-                  updateCheckOut("autoCheckoutTime", event.target.value)
-                }
-                required
-              />
-            </Field>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <TimeField
+              label="Early Checkout Before"
+              value={scheduleForm.checkOut.earlyCheckoutBefore}
+              onChange={(value) => updateCheckOut("earlyCheckoutBefore", value)}
+            />
+            <TimeField
+              label="Normal Checkout Until"
+              value={scheduleForm.checkOut.normalCheckoutUntil}
+              onChange={(value) => updateCheckOut("normalCheckoutUntil", value)}
+            />
+            <TimeField
+              label="Note Required After"
+              value={scheduleForm.checkOut.noteRequiredAfter}
+              onChange={(value) => updateCheckOut("noteRequiredAfter", value)}
+            />
+            <TimeField
+              label="Latest Checkout Time"
+              value={scheduleForm.checkOut.latestCheckoutTime}
+              onChange={(value) => updateCheckOut("latestCheckoutTime", value)}
+            />
+            <TimeField
+              label="Automatic Checkout Time"
+              value={scheduleForm.checkOut.autoCheckoutTime}
+              onChange={(value) => updateCheckOut("autoCheckoutTime", value)}
+            />
           </div>
 
-          <div className="mt-5 space-y-3">
+          <div className="mt-3 grid gap-2 border-t border-slate-100 pt-3 md:grid-cols-2">
             <Toggle
               label="Enable automatic checkout"
               checked={scheduleForm.checkOut.autoCheckoutEnabled}
@@ -657,56 +627,67 @@ export default function ScheduleManagementPage() {
 
         <Section
           title="Absence Rules"
-          description="Configure automatic absence processing."
+          description="Configure when employees should automatically be marked absent."
         >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Mark Absent After">
-              <input
-                type="time"
-                className={inputClass}
-                value={scheduleForm.absence.markAbsentAfter}
-                onChange={(event) =>
-                  updateAbsence("markAbsentAfter", event.target.value)
-                }
-                required
-              />
-            </Field>
-          </div>
-
-          <div className="mt-5">
-            <Toggle
-              label="Automatically mark employees absent"
-              checked={scheduleForm.absence.autoMarkAbsent}
-              onChange={(value) => updateAbsence("autoMarkAbsent", value)}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <TimeField
+              label="Mark Absent After"
+              value={scheduleForm.absence.markAbsentAfter}
+              onChange={(value) => updateAbsence("markAbsentAfter", value)}
             />
+            <div className="flex items-end">
+              <Toggle
+                label="Automatically mark employees absent"
+                checked={scheduleForm.absence.autoMarkAbsent}
+                onChange={(value) => updateAbsence("autoMarkAbsent", value)}
+              />
+            </div>
           </div>
         </Section>
 
-        <div className="flex justify-end">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
+          <p className="text-xs text-slate-500">
+            Changes apply to the company attendance schedule.
+          </p>
           <button
             type="submit"
             disabled={isSavingSchedule || scheduleForm.workingDays.length === 0}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#F40026] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#d90022] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <FiSave />
+            {isSavingSchedule ? (
+              <FiRefreshCw className="animate-spin" />
+            ) : (
+              <FiSave />
+            )}
             {isSavingSchedule ? "Saving..." : "Save Schedule"}
           </button>
         </div>
       </form>
 
+      {/* Holiday management */}
       <Section
         title="Company Holidays"
-        description="Add extra holidays that should not count as employee absences."
+        description="Add holidays that should not count as employee absences."
+        action={
+          <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">
+            {holidaysQuery.data?.length ?? 0} holidays
+          </span>
+        }
       >
         <form
           onSubmit={handleHolidaySubmit}
-          className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-4"
+          className="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3"
         >
-          <h3 className="mb-4 text-sm font-semibold text-slate-800">
-            {editingHolidayId ? "Edit Holiday" : "Add New Holiday"}
-          </h3>
+          <div className="mb-3 flex items-center gap-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F40026]/10 text-[#F40026]">
+              {editingHolidayId ? <FiEdit2 size={14} /> : <FiPlus size={15} />}
+            </span>
+            <h3 className="text-sm font-bold text-[#030708]">
+              {editingHolidayId ? "Edit Holiday" : "Add New Holiday"}
+            </h3>
+          </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Holiday Date">
               <input
                 type="date"
@@ -740,13 +721,13 @@ export default function ScheduleManagementPage() {
               />
             </Field>
 
-            <div className="md:col-span-2">
+            <div className="sm:col-span-2">
               <Field label="Description (Optional)">
                 <textarea
                   className={inputClass}
                   rows={2}
                   maxLength={500}
-                  placeholder="Holiday details..."
+                  placeholder="Add a short description..."
                   value={holidayForm.description}
                   onChange={(event) =>
                     setHolidayForm((current) => ({
@@ -759,7 +740,7 @@ export default function ScheduleManagementPage() {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="submit"
               disabled={
@@ -768,9 +749,15 @@ export default function ScheduleManagementPage() {
                 !holidayForm.name.trim() ||
                 (!editingHolidayId && !holidayForm.date)
               }
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#F40026] px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-[#d90022] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {editingHolidayId ? <FiSave /> : <FiPlus />}
+              {isSavingHoliday ? (
+                <FiRefreshCw className="animate-spin" />
+              ) : editingHolidayId ? (
+                <FiSave />
+              ) : (
+                <FiPlus />
+              )}
               {isSavingHoliday
                 ? "Saving..."
                 : editingHolidayId
@@ -782,7 +769,7 @@ export default function ScheduleManagementPage() {
               <button
                 type="button"
                 onClick={cancelHolidayEdit}
-                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
               >
                 Cancel
               </button>
@@ -792,13 +779,13 @@ export default function ScheduleManagementPage() {
 
         {holidaysQuery.data?.length ? (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px] text-left text-sm">
+            <table className="w-full min-w-[580px] text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
-                  <th className="px-3 py-3 font-semibold">Date</th>
-                  <th className="px-3 py-3 font-semibold">Holiday</th>
-                  <th className="px-3 py-3 font-semibold">Description</th>
-                  <th className="px-3 py-3 text-right font-semibold">
+                <tr className="border-b border-slate-200 bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
+                  <th className="px-3 py-2.5 font-semibold">Date</th>
+                  <th className="px-3 py-2.5 font-semibold">Holiday</th>
+                  <th className="px-3 py-2.5 font-semibold">Description</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">
                     Actions
                   </th>
                 </tr>
@@ -807,35 +794,37 @@ export default function ScheduleManagementPage() {
                 {holidaysQuery.data.map((holiday) => (
                   <tr
                     key={holiday._id}
-                    className="border-b border-slate-100 last:border-0"
+                    className="border-b border-slate-100 last:border-0 hover:bg-slate-50/70"
                   >
-                    <td className="px-3 py-4 whitespace-nowrap text-slate-600">
+                    <td className="whitespace-nowrap px-3 py-3 text-xs text-slate-500">
                       {holiday.date}
                     </td>
-                    <td className="px-3 py-4 font-medium text-slate-800">
+                    <td className="px-3 py-3 text-xs font-semibold text-[#030708]">
                       {holiday.name}
                     </td>
-                    <td className="px-3 py-4 text-slate-500">
+                    <td className="px-3 py-3 text-xs text-slate-500">
                       {holiday.description || "—"}
                     </td>
-                    <td className="px-3 py-4">
-                      <div className="flex justify-end gap-2">
+                    <td className="px-3 py-2.5">
+                      <div className="flex justify-end gap-1">
                         <button
                           type="button"
                           title="Edit holiday"
+                          aria-label={`Edit ${holiday.name}`}
                           onClick={() => startEditingHoliday(holiday)}
-                          className="rounded-lg p-2 text-slate-500 hover:bg-blue-50 hover:text-blue-600"
+                          className="rounded-md p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#030708]"
                         >
-                          <FiEdit2 size={16} />
+                          <FiEdit2 size={15} />
                         </button>
                         <button
                           type="button"
                           title="Delete holiday"
+                          aria-label={`Delete ${holiday.name}`}
                           disabled={deleteHolidayMutation.isPending}
                           onClick={() => handleDeleteHoliday(holiday)}
-                          className="rounded-lg p-2 text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                          className="rounded-md p-2 text-slate-500 transition hover:bg-red-50 hover:text-[#F40026] disabled:opacity-50"
                         >
-                          <FiTrash2 size={16} />
+                          <FiTrash2 size={15} />
                         </button>
                       </div>
                     </td>
@@ -845,10 +834,10 @@ export default function ScheduleManagementPage() {
             </table>
           </div>
         ) : (
-          <div className="py-10 text-center">
-            <FiCalendar className="mx-auto mb-3 text-2xl text-slate-300" />
-            <p className="text-sm font-medium text-slate-600">
-              No holidays added yet.
+          <div className="py-7 text-center">
+            <FiCalendar className="mx-auto mb-2 text-xl text-slate-300" />
+            <p className="text-sm font-semibold text-slate-700">
+              No holidays added yet
             </p>
             <p className="mt-1 text-xs text-slate-400">
               Add a holiday using the form above.
@@ -857,9 +846,9 @@ export default function ScheduleManagementPage() {
         )}
       </Section>
 
-      <div className="flex items-center gap-2 text-xs text-slate-400">
-        <FiClock />
-        Schedule times are interpreted using the configured company timezone.
+      <div className="flex items-center gap-2 text-[11px] text-slate-400">
+        <FiClock size={13} />
+        Schedule times use the configured company timezone.
       </div>
     </div>
   );

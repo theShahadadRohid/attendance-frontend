@@ -136,14 +136,14 @@ function getErrorMessage(error: unknown) {
 
 function StatusBadge({ status }: { status: AttendanceRecord["status"] }) {
   const styles = {
-    present: "bg-green-100 text-green-700",
-    late: "bg-amber-100 text-amber-700",
-    absent: "bg-red-100 text-red-700",
+    present: "bg-slate-100 text-slate-700",
+    late: "bg-red-50 text-[#F40026]",
+    absent: "bg-[#030708] text-white",
   };
 
   return (
     <span
-      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${styles[status]}`}
+      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${styles[status]}`}
     >
       {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
@@ -183,31 +183,37 @@ function CorrectionForm({
     });
   }
 
+  const inputClassName =
+    "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-[#F40026] focus:ring-2 focus:ring-[#F40026]/10";
+
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 border-t border-slate-200 bg-slate-50 p-4"
+      className="space-y-3 border-t border-slate-200 bg-slate-50 p-3 sm:p-4"
     >
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-slate-900">Correct attendance</h3>
+        <div>
+          <h3 className="text-sm font-semibold text-[#030708]">
+            Correct attendance
+          </h3>
+          <p className="mt-0.5 text-xs text-slate-500">
+            Times are interpreted as Bangladesh local time (Asia/Dhaka).
+          </p>
+        </div>
 
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg p-2 text-slate-500 hover:bg-slate-200"
+          className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-200 hover:text-[#030708]"
+          aria-label="Close correction form"
         >
-          <FiX />
+          <FiX size={17} />
         </button>
       </div>
 
-      <p className="text-xs text-slate-500">
-        Times are interpreted as Bangladesh local time (Asia/Dhaka). Leave an
-        unchanged time as it is.
-      </p>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label className="mb-1 block text-xs font-medium text-slate-600">
             Check-in time
           </label>
 
@@ -215,12 +221,12 @@ function CorrectionForm({
             type="datetime-local"
             value={checkInAt}
             onChange={(event) => setCheckInAt(event.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+            className={inputClassName}
           />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label className="mb-1 block text-xs font-medium text-slate-600">
             Check-out time
           </label>
 
@@ -228,13 +234,13 @@ function CorrectionForm({
             type="datetime-local"
             value={checkOutAt}
             onChange={(event) => setCheckOutAt(event.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+            className={inputClassName}
           />
         </div>
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-slate-700">
+        <label className="mb-1 block text-xs font-medium text-slate-600">
           Correction reason *
         </label>
 
@@ -242,28 +248,29 @@ function CorrectionForm({
           required
           minLength={1}
           maxLength={500}
-          rows={3}
+          rows={2}
           value={reason}
           onChange={(event) => setReason(event.target.value)}
           placeholder="Explain why this attendance record needs correction..."
-          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#F40026] focus:ring-2 focus:ring-[#F40026]/10"
         />
-        <p className="mt-1 text-right text-xs text-slate-400">
+
+        <p className="mt-0.5 text-right text-xs text-slate-400">
           {reason.length}/500
         </p>
       </div>
 
       {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
       )}
 
-      <div className="flex justify-end gap-2">
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
         >
           Cancel
         </button>
@@ -271,9 +278,13 @@ function CorrectionForm({
         <button
           type="submit"
           disabled={isPending || !reason.trim() || (!checkInAt && !checkOutAt)}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#F40026] px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <FiCheck />
+          {isPending ? (
+            <FiRefreshCw className="animate-spin" size={15} />
+          ) : (
+            <FiCheck size={15} />
+          )}
           {isPending ? "Saving..." : "Save correction"}
         </button>
       </div>
@@ -353,30 +364,33 @@ export default function EmployeeAttendanceHistoryPage() {
 
   if (!employeeId) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+      <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
         Employee ID is missing from the URL.
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">
-          Attendance History
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          View and correct an employee's attendance records.
-        </p>
+    <div className="w-full space-y-4">
+      {/* Page heading */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-[#030708]">
+            Attendance History
+          </h1>
+          <p className="mt-0.5 text-sm text-slate-500">
+            View and correct employee attendance records.
+          </p>
+        </div>
       </div>
 
       {historyQuery.isLoading ? (
-        <div className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-16 text-sm text-slate-500">
-          <FiRefreshCw className="animate-spin" />
+        <div className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-12 text-sm text-slate-500">
+          <FiRefreshCw className="animate-spin text-[#F40026]" />
           Loading employee attendance...
         </div>
       ) : historyQuery.isError ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-5">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4">
           <p className="text-sm text-red-700">
             {getErrorMessage(historyQuery.error)}
           </p>
@@ -384,56 +398,70 @@ export default function EmployeeAttendanceHistoryPage() {
           <button
             type="button"
             onClick={() => void historyQuery.refetch()}
-            className="mt-3 text-sm font-semibold text-red-700"
+            className="mt-2 text-sm font-semibold text-[#F40026] hover:underline"
           >
             Try again
           </button>
         </div>
       ) : data ? (
         <>
-          <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-slate-900">
-                    {data.employee.fullName}
-                  </h2>
-
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs font-semibold ${
-                      data.employee.isActive
-                        ? "bg-green-100 text-green-700"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    {data.employee.isActive ? "Active" : "Inactive"}
-                  </span>
+          {/* Compact employee overview */}
+          <section className="rounded-xl border border-slate-200 bg-white p-3.5 sm:p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#030708] text-sm font-bold text-white">
+                  {data.employee.fullName
+                    .trim()
+                    .split(/\s+/)
+                    .slice(0, 2)
+                    .map((part) => part.charAt(0).toUpperCase())
+                    .join("")}
                 </div>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  {data.employee.employeeCode}
-                  {" · "}
-                  {data.employee.designation || data.employee.employmentType}
-                </p>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-sm font-bold text-[#030708]">
+                      {data.employee.fullName}
+                    </h2>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  {data.employee.phoneNumber}
-                  {data.employee.department && ` · ${data.employee.department}`}
-                </p>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        data.employee.isActive
+                          ? "bg-slate-100 text-slate-700"
+                          : "bg-red-50 text-[#F40026]"
+                      }`}
+                    >
+                      {data.employee.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    {data.employee.employeeCode}
+                    {" · "}
+                    {data.employee.designation || data.employee.employmentType}
+                    {data.employee.department &&
+                      ` · ${data.employee.department}`}
+                  </p>
+
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    {data.employee.phoneNumber}
+                  </p>
+                </div>
               </div>
 
-              <div className="text-sm text-slate-500">
-                <p>Total matching records</p>
-                <p className="mt-1 text-2xl font-bold text-slate-900">
+              <div className="rounded-lg bg-slate-50 px-3 py-2">
+                <p className="text-xs text-slate-500">Total records</p>
+                <p className="text-xl font-bold tabular-nums text-[#030708]">
                   {pagination?.totalRecords ?? 0}
                 </p>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-semibold text-slate-900">
+          {/* Compact date filters */}
+          <section className="rounded-xl border border-slate-200 bg-white p-3.5 sm:p-4">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold text-[#030708]">
                 Filter attendance
               </h2>
 
@@ -445,7 +473,7 @@ export default function EmployeeAttendanceHistoryPage() {
                     setTo("");
                     setPage(1);
                   }}
-                  className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                  className="text-xs font-semibold text-[#F40026] hover:underline"
                 >
                   Clear filters
                 </button>
@@ -454,67 +482,80 @@ export default function EmployeeAttendanceHistoryPage() {
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                <label className="mb-1 block text-xs font-medium text-slate-600">
                   From date
                 </label>
 
                 <div className="relative">
-                  <FiCalendar className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <FiCalendar
+                    size={15}
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
                   <input
                     type="date"
                     value={from}
                     max={to || undefined}
                     onChange={(event) => handleFromChange(event.target.value)}
-                    className="w-full rounded-lg border border-slate-200 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-blue-500"
+                    className="h-10 w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm outline-none transition focus:border-[#F40026] focus:ring-2 focus:ring-[#F40026]/10"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                <label className="mb-1 block text-xs font-medium text-slate-600">
                   To date
                 </label>
 
                 <div className="relative">
-                  <FiCalendar className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <FiCalendar
+                    size={15}
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
                   <input
                     type="date"
                     value={to}
                     min={from || undefined}
                     onChange={(event) => handleToChange(event.target.value)}
-                    className="w-full rounded-lg border border-slate-200 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-blue-500"
+                    className="h-10 w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm outline-none transition focus:border-[#F40026] focus:ring-2 focus:ring-[#F40026]/10"
                   />
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4">
-              <h2 className="font-semibold text-slate-900">
-                Attendance records
-              </h2>
+          {/* Attendance records */}
+          <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div className="flex items-center justify-between border-b border-slate-200 px-3.5 py-3 sm:px-4">
+              <div>
+                <h2 className="text-sm font-semibold text-[#030708]">
+                  Attendance records
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {pagination?.totalRecords ?? 0} matching records
+                </p>
+              </div>
 
               <button
                 type="button"
                 onClick={() => void historyQuery.refetch()}
                 disabled={historyQuery.isFetching}
-                className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-50"
+                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#F40026] disabled:opacity-50"
                 title="Refresh"
               >
                 <FiRefreshCw
+                  size={16}
                   className={historyQuery.isFetching ? "animate-spin" : ""}
                 />
               </button>
             </div>
 
             {records.length === 0 ? (
-              <div className="px-4 py-16 text-center">
-                <FiClock className="mx-auto mb-3 text-3xl text-slate-300" />
-                <p className="font-medium text-slate-700">
+              <div className="px-4 py-10 text-center">
+                <FiClock className="mx-auto mb-2 text-2xl text-slate-300" />
+                <p className="text-sm font-semibold text-slate-700">
                   No attendance records found
                 </p>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-xs text-slate-500">
                   Try a different date range.
                 </p>
               </div>
@@ -522,36 +563,38 @@ export default function EmployeeAttendanceHistoryPage() {
               <div className="divide-y divide-slate-100">
                 {records.map((record) => (
                   <div key={record._id}>
-                    <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-3 p-3.5 sm:flex-row sm:items-start sm:justify-between sm:px-4">
                       <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-semibold text-slate-900">
+                        {/* Date and status */}
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <p className="mr-1 text-sm font-semibold text-[#030708]">
                             {formatDate(record.date)}
                           </p>
 
                           <StatusBadge status={record.status} />
 
                           {record.needsReview && (
-                            <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">
+                            <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-[#F40026]">
                               Needs review
                             </span>
                           )}
 
                           {record.isAutoCheckout && (
-                            <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600">
+                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
                               Auto checkout
                             </span>
                           )}
                         </div>
 
-                        <div className="mt-3 grid grid-cols-2 gap-4 sm:max-w-md">
+                        {/* Check-in and check-out */}
+                        <div className="mt-3 grid grid-cols-2 gap-4 sm:max-w-sm">
                           <div>
                             <p className="text-xs text-slate-500">Check-in</p>
-                            <p className="mt-1 text-sm font-medium text-slate-800">
+                            <p className="mt-0.5 text-sm font-semibold text-[#030708]">
                               {formatTime(record.checkInAt, record.timeZone)}
                             </p>
                             {record.checkInStatus && (
-                              <p className="mt-1 text-xs text-slate-500">
+                              <p className="mt-0.5 text-xs capitalize text-slate-500">
                                 {record.checkInStatus.replaceAll("_", " ")}
                               </p>
                             )}
@@ -559,39 +602,59 @@ export default function EmployeeAttendanceHistoryPage() {
 
                           <div>
                             <p className="text-xs text-slate-500">Check-out</p>
-                            <p className="mt-1 text-sm font-medium text-slate-800">
+                            <p className="mt-0.5 text-sm font-semibold text-[#030708]">
                               {formatTime(record.checkOutAt, record.timeZone)}
                             </p>
                             {record.checkOutStatus && (
-                              <p className="mt-1 text-xs text-slate-500">
+                              <p className="mt-0.5 text-xs capitalize text-slate-500">
                                 {record.checkOutStatus}
                               </p>
                             )}
                           </div>
                         </div>
 
-                        {record.checkInReason && (
-                          <p className="mt-3 text-xs text-slate-500">
-                            Check-in reason: {record.checkInReason}
-                          </p>
-                        )}
+                        {/* Additional attendance information */}
+                        {(record.checkInReason ||
+                          record.checkOutNote ||
+                          record.correctionReason ||
+                          record.reviewReason) && (
+                          <div className="mt-3 space-y-1 border-t border-slate-100 pt-2.5">
+                            {record.checkInReason && (
+                              <p className="break-words text-xs text-slate-600">
+                                <span className="font-semibold text-slate-700">
+                                  Check-in reason:
+                                </span>{" "}
+                                {record.checkInReason}
+                              </p>
+                            )}
 
-                        {record.checkOutNote && (
-                          <p className="mt-1 text-xs text-slate-500">
-                            Checkout note: {record.checkOutNote}
-                          </p>
-                        )}
+                            {record.checkOutNote && (
+                              <p className="break-words text-xs text-slate-600">
+                                <span className="font-semibold text-slate-700">
+                                  Checkout note:
+                                </span>{" "}
+                                {record.checkOutNote}
+                              </p>
+                            )}
 
-                        {record.correctionReason && (
-                          <p className="mt-2 text-xs text-blue-700">
-                            Correction reason: {record.correctionReason}
-                          </p>
-                        )}
+                            {record.correctionReason && (
+                              <p className="break-words text-xs text-slate-600">
+                                <span className="font-semibold text-slate-700">
+                                  Correction reason:
+                                </span>{" "}
+                                {record.correctionReason}
+                              </p>
+                            )}
 
-                        {record.reviewReason && (
-                          <p className="mt-2 text-xs text-amber-700">
-                            Review reason: {record.reviewReason}
-                          </p>
+                            {record.reviewReason && (
+                              <p className="break-words text-xs text-[#F40026]">
+                                <span className="font-semibold">
+                                  Review reason:
+                                </span>{" "}
+                                {record.reviewReason}
+                              </p>
+                            )}
+                          </div>
                         )}
                       </div>
 
@@ -603,12 +666,18 @@ export default function EmployeeAttendanceHistoryPage() {
                           );
                           correctionMutation.reset();
                         }}
-                        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                        className={`inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition ${
+                          editingRecord === record._id
+                            ? "border-red-200 bg-red-50 text-[#F40026]"
+                            : "border-slate-200 bg-white text-slate-700 hover:border-[#F40026] hover:text-[#F40026]"
+                        }`}
                       >
-                        <FiEdit2 />
-                        {editingRecord === record._id
-                          ? "Close correction"
-                          : "Correct"}
+                        {editingRecord === record._id ? (
+                          <FiX size={14} />
+                        ) : (
+                          <FiEdit2 size={14} />
+                        )}
+                        {editingRecord === record._id ? "Close" : "Correct"}
                       </button>
                     </div>
 
@@ -638,9 +707,10 @@ export default function EmployeeAttendanceHistoryPage() {
               </div>
             )}
 
+            {/* Pagination */}
             {pagination && pagination.totalPages > 0 && (
-              <div className="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-slate-500">
+              <div className="flex flex-col gap-2 border-t border-slate-200 px-3.5 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                <p className="text-xs text-slate-500">
                   Page {pagination.page} of {pagination.totalPages}
                   {" · "}
                   {pagination.totalRecords} records
@@ -651,9 +721,9 @@ export default function EmployeeAttendanceHistoryPage() {
                     type="button"
                     disabled={page <= 1 || historyQuery.isFetching}
                     onClick={() => setPage((current) => current - 1)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40"
+                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    <FiChevronLeft />
+                    <FiChevronLeft size={14} />
                     Previous
                   </button>
 
@@ -663,15 +733,15 @@ export default function EmployeeAttendanceHistoryPage() {
                       page >= pagination.totalPages || historyQuery.isFetching
                     }
                     onClick={() => setPage((current) => current + 1)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40"
+                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Next
-                    <FiChevronRight />
+                    <FiChevronRight size={14} />
                   </button>
                 </div>
               </div>
             )}
-          </div>
+          </section>
         </>
       ) : null}
     </div>
