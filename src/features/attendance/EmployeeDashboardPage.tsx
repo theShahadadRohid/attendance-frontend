@@ -84,8 +84,15 @@ function getCurrentLocation(): Promise<{
       return;
     }
 
+    console.log("GPS:");
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        console.log("Browser GPS:", {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        });
+
         resolve({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
@@ -228,6 +235,19 @@ export default function EmployeeDashboardPage() {
       });
     },
     onError: (error: unknown) => {
+      const axiosError = error as {
+        response?: {
+          status?: number;
+          data?: unknown;
+        };
+      };
+
+      console.error("Check-in API error:", {
+        status: axiosError.response?.status,
+        response: axiosError.response?.data,
+        error,
+      });
+
       const details = getErrorDetails(error);
 
       if (details.code === "LATE_REASON_REQUIRED") {

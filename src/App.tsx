@@ -1,19 +1,24 @@
 import type { ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import AdminDashboardPage from "./features/attendance/AdminDashboardPage";
+
 import { useAuth } from "./features/auth/useAuth";
 import { AdminLoginPage, EmployeeLoginPage } from "./features/auth/LoginPages";
 
 import AdminLayout from "./layouts/admin/AdminLayout";
-import EmployeeManagementPage from "./features/employee/EmployeeManagementPage";
-import EmployeeDetailsPage from "./features/employee/EmployeeDetailsPage";
+import EmployeeLayout from "./layouts/employee/EmployeeLayout";
+
+import AdminDashboardPage from "./features/attendance/AdminDashboardPage";
 import AdminAttendancePage from "./features/attendance/AdminAttendancePage";
 import AttendanceReviewsPage from "./features/attendance/AttendanceReviewsPage";
 import EmployeeAttendanceHistoryPage from "./features/attendance/EmployeeAttendanceHistoryPage";
-import ScheduleManagementPage from "./features/schedule/ScheduleManagementPage";
-import PasswordResetRequestsPage from "./features/auth/PasswordResetRequestsPage";
 import EmployeeDashboardPage from "./features/attendance/EmployeeDashboardPage";
 import MyAttendanceHistoryPage from "./features/attendance/MyAttendanceHistoryPage";
+
+import EmployeeManagementPage from "./features/employee/EmployeeManagementPage";
+import EmployeeDetailsPage from "./features/employee/EmployeeDetailsPage";
+
+import ScheduleManagementPage from "./features/schedule/ScheduleManagementPage";
+import PasswordResetRequestsPage from "./features/auth/PasswordResetRequestsPage";
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -106,7 +111,7 @@ function App() {
         }
       />
 
-      {/* Admin routes with shared layout */}
+      {/* Admin routes */}
       <Route
         path="/admin"
         element={
@@ -137,33 +142,26 @@ function App() {
         <Route path="password-resets" element={<PasswordResetRequestsPage />} />
       </Route>
 
-      {/* Employee routes */}
+      {/* Employee routes with shared layout */}
       <Route
-        path="/employee/dashboard"
+        path="/employee"
         element={
           <EmployeeRoute>
-            <EmployeeDashboardPage />
+            <EmployeeLayout />
           </EmployeeRoute>
         }
-      />
+      >
+        <Route index element={<Navigate to="dashboard" replace />} />
 
-      <Route
-        path="/employee/attendance"
-        element={
-          <EmployeeRoute>
-            <MyAttendanceHistoryPage />
-          </EmployeeRoute>
-        }
-      />
+        <Route path="dashboard" element={<EmployeeDashboardPage />} />
 
-      <Route
-        path="/employee/settings"
-        element={
-          <EmployeeRoute>
-            <PlaceholderPage title="Account Settings" />
-          </EmployeeRoute>
-        }
-      />
+        <Route path="attendance" element={<MyAttendanceHistoryPage />} />
+
+        <Route
+          path="settings"
+          element={<PlaceholderPage title="Account Settings" />}
+        />
+      </Route>
 
       <Route
         path="*"
