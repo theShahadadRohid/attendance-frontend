@@ -9,6 +9,10 @@ import EmployeeManagementPage from "./features/employee/EmployeeManagementPage";
 import EmployeeDetailsPage from "./features/employee/EmployeeDetailsPage";
 import AdminAttendancePage from "./features/attendance/AdminAttendancePage";
 import AttendanceReviewsPage from "./features/attendance/AttendanceReviewsPage";
+import EmployeeAttendanceHistoryPage from "./features/attendance/EmployeeAttendanceHistoryPage";
+import ScheduleManagementPage from "./features/schedule/ScheduleManagementPage";
+import PasswordResetRequestsPage from "./features/auth/PasswordResetRequestsPage";
+import EmployeeDashboardPage from "./features/attendance/EmployeeDashboardPage";
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -124,18 +128,12 @@ function App() {
 
         <Route
           path="attendance/:employeeId"
-          element={<PlaceholderPage title="Employee Attendance History" />}
+          element={<EmployeeAttendanceHistoryPage />}
         />
 
-        <Route
-          path="schedule"
-          element={<PlaceholderPage title="Schedule & Holidays" />}
-        />
+        <Route path="schedule" element={<ScheduleManagementPage />} />
 
-        <Route
-          path="password-resets"
-          element={<PlaceholderPage title="Password Reset Requests" />}
-        />
+        <Route path="password-resets" element={<PasswordResetRequestsPage />} />
       </Route>
 
       {/* Employee routes */}
@@ -143,7 +141,7 @@ function App() {
         path="/employee/dashboard"
         element={
           <EmployeeRoute>
-            <PlaceholderPage title="Employee Dashboard" />
+            <EmployeeDashboardPage />
           </EmployeeRoute>
         }
       />
