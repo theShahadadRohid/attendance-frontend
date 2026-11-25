@@ -13,6 +13,7 @@ import EmployeeAttendanceHistoryPage from "./features/attendance/EmployeeAttenda
 import ScheduleManagementPage from "./features/schedule/ScheduleManagementPage";
 import PasswordResetRequestsPage from "./features/auth/PasswordResetRequestsPage";
 import EmployeeDashboardPage from "./features/attendance/EmployeeDashboardPage";
+import MyAttendanceHistoryPage from "./features/attendance/MyAttendanceHistoryPage";
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -150,7 +151,7 @@ function App() {
         path="/employee/attendance"
         element={
           <EmployeeRoute>
-            <PlaceholderPage title="My Attendance History" />
+            <MyAttendanceHistoryPage />
           </EmployeeRoute>
         }
       />
