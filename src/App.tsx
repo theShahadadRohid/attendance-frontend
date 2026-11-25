@@ -1,18 +1,19 @@
 import type { ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { AdminLoginPage, EmployeeLoginPage } from "./features/auth/LoginPages";
+import AdminDashboardPage from "./features/attendance/AdminDashboardPage";
 import { useAuth } from "./features/auth/useAuth";
+import { AdminLoginPage, EmployeeLoginPage } from "./features/auth/LoginPages";
+
+import AdminLayout from "./layouts/admin/AdminLayout";
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
-      <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
-        <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
-        <p className="mt-2 text-sm text-slate-500">
-          This page is under development.
-        </p>
-      </div>
-    </main>
+    <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+      <h1 className="text-xl font-bold text-slate-900">{title}</h1>
+      <p className="mt-2 text-sm text-slate-500">
+        This page is under development.
+      </p>
+    </div>
   );
 }
 
@@ -77,12 +78,12 @@ function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/admin/login" replace />} />
 
-      {/* Public routes */}
+      {/* Guest routes */}
       <Route
         path="/admin/login"
         element={
           <GuestRoute>
-            <AdminLoginPage></AdminLoginPage>
+            <AdminLoginPage />
           </GuestRoute>
         }
       />
@@ -96,78 +97,54 @@ function App() {
         }
       />
 
-      {/* Admin routes */}
+      {/* Admin routes with shared layout */}
       <Route
-        path="/admin/dashboard"
+        path="/admin"
         element={
           <AdminRoute>
-            <PlaceholderPage title="Admin Dashboard" />
+            <AdminLayout />
           </AdminRoute>
         }
-      />
+      >
+        <Route index element={<Navigate to="dashboard" replace />} />
 
-      <Route
-        path="/admin/employees"
-        element={
-          <AdminRoute>
-            <PlaceholderPage title="Employees" />
-          </AdminRoute>
-        }
-      />
+        <Route path="dashboard" element={<AdminDashboardPage />} />
 
-      <Route
-        path="/admin/employees/:employeeId"
-        element={
-          <AdminRoute>
-            <PlaceholderPage title="Employee Details" />
-          </AdminRoute>
-        }
-      />
+        <Route
+          path="employees"
+          element={<PlaceholderPage title="Employees" />}
+        />
 
-      <Route
-        path="/admin/attendance"
-        element={
-          <AdminRoute>
-            <PlaceholderPage title="Attendance Management" />
-          </AdminRoute>
-        }
-      />
+        <Route
+          path="employees/:employeeId"
+          element={<PlaceholderPage title="Employee Details" />}
+        />
 
-      <Route
-        path="/admin/attendance/:employeeId"
-        element={
-          <AdminRoute>
-            <PlaceholderPage title="Employee Attendance History" />
-          </AdminRoute>
-        }
-      />
+        <Route
+          path="attendance"
+          element={<PlaceholderPage title="Attendance Management" />}
+        />
 
-      <Route
-        path="/admin/attendance/reviews"
-        element={
-          <AdminRoute>
-            <PlaceholderPage title="Attendance Reviews" />
-          </AdminRoute>
-        }
-      />
+        <Route
+          path="attendance/reviews"
+          element={<PlaceholderPage title="Attendance Reviews" />}
+        />
 
-      <Route
-        path="/admin/schedule"
-        element={
-          <AdminRoute>
-            <PlaceholderPage title="Schedule & Holidays" />
-          </AdminRoute>
-        }
-      />
+        <Route
+          path="attendance/:employeeId"
+          element={<PlaceholderPage title="Employee Attendance History" />}
+        />
 
-      <Route
-        path="/admin/password-resets"
-        element={
-          <AdminRoute>
-            <PlaceholderPage title="Password Reset Requests" />
-          </AdminRoute>
-        }
-      />
+        <Route
+          path="schedule"
+          element={<PlaceholderPage title="Schedule & Holidays" />}
+        />
+
+        <Route
+          path="password-resets"
+          element={<PlaceholderPage title="Password Reset Requests" />}
+        />
+      </Route>
 
       {/* Employee routes */}
       <Route
