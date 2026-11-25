@@ -12,6 +12,7 @@ import {
 } from "react-icons/fi";
 import { employeeApi } from "../../lib/api";
 import { useAuth } from "../auth/useAuth";
+import LocationPickerMap from "./LocationPickerMap";
 
 interface AttendanceRecord {
   _id: string;
@@ -48,6 +49,13 @@ interface AttendanceActionInput {
   reason?: string;
   note?: string;
 }
+
+const OFFICE_LOCATION = {
+  latitude: 22.359923,
+  longitude: 91.82385,
+};
+
+const OFFICE_RADIUS_METERS = 50;
 
 function getErrorDetails(error: unknown) {
   const response = (
@@ -320,7 +328,9 @@ export default function EmployeeDashboardPage() {
     }
 
     try {
-      const location = await getCurrentLocation();
+      const location = currentLocation ?? (await getCurrentLocation());
+
+      setCurrentLocation(location);
 
       checkInMutation.mutate({
         location,
@@ -344,7 +354,9 @@ export default function EmployeeDashboardPage() {
     }
 
     try {
-      const location = await getCurrentLocation();
+      const location = currentLocation ?? (await getCurrentLocation());
+
+      setCurrentLocation(location);
 
       checkOutMutation.mutate({
         location,
@@ -418,34 +430,25 @@ export default function EmployeeDashboardPage() {
           </button>
         </header>
 
-        <div className="space-y-4">
+        <div className="space-y-4 rounded-xl border bg-white p-4">
+          <h2 className="text-lg font-semibold">Your Location</h2>
+
           <button
             type="button"
             onClick={handleGetMyLocation}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+            className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
           >
-            <FiMapPin />
+            <FiMapPin className="mr-2 inline" />
             Get My Location
           </button>
 
           {currentLocation && (
-            <>
-              <p className="text-sm text-gray-600">
-                Latitude: {currentLocation.latitude.toFixed(6)}
-                <br />
-                Longitude: {currentLocation.longitude.toFixed(6)}
-              </p>
-
-              <iframe
-                title="Your Current Location"
-                width="100%"
-                height="350"
-                loading="lazy"
-                className="rounded-xl border"
-                src={`https://maps.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}&z=18&output=embed`}
-                allowFullScreen
-              />
-            </>
+            <LocationPickerMap
+              position={currentLocation}
+              officeLocation={OFFICE_LOCATION}
+              radiusMeters={OFFICE_RADIUS_METERS}
+              onPositionChange={setCurrentLocation}
+            />
           )}
         </div>
 
