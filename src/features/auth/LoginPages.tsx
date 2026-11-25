@@ -1,24 +1,14 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 
 import { useAuth } from "./useAuth";
+import { getErrorMessage } from "../../utils/getErrorMessage";
+import { normalizeBangladeshPhone } from "../../utils/phone";
+
 import { LuLockKeyhole } from "react-icons/lu";
 import { MdEmail } from "react-icons/md";
 import { BsArrowRight } from "react-icons/bs";
 import { BiPhone } from "react-icons/bi";
-
-function getErrorMessage(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    return (
-      error.response?.data?.message ||
-      error.response?.data?.error ||
-      "Login failed. Please check your credentials."
-    );
-  }
-
-  return "Something went wrong. Please try again.";
-}
 
 function LoginLayout({
   title,
@@ -27,7 +17,7 @@ function LoginLayout({
 }: {
   title: string;
   description: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
@@ -85,7 +75,11 @@ export function AdminLoginPage() {
     setIsSubmitting(true);
 
     try {
-      await loginAdmin({ email: email.trim(), password });
+      await loginAdmin({
+        email: email.trim(),
+        password,
+      });
+
       navigate("/admin/dashboard", { replace: true });
     } catch (error) {
       setError(getErrorMessage(error));
@@ -189,7 +183,7 @@ export function EmployeeLoginPage() {
 
     try {
       await loginEmployee({
-        phoneNumber: phoneNumber.trim(),
+        phoneNumber: normalizeBangladeshPhone(phoneNumber),
         password,
       });
 
@@ -224,11 +218,15 @@ export function EmployeeLoginPage() {
             <input
               id="employee-phone"
               type="tel"
+              inputMode="numeric"
               autoComplete="username"
               required
+              maxLength={11}
+              pattern="01[3-9][0-9]{8}"
               value={phoneNumber}
               onChange={(event) => setPhoneNumber(event.target.value)}
-              placeholder="+8801712345678"
+              placeholder="01712345678"
+              title="Enter an 11-digit Bangladeshi mobile number."
               className="w-full rounded-lg border border-slate-300 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
             />
           </div>

@@ -1,19 +1,11 @@
 import { createContext } from "react";
 
 import type {
-  Admin,
-  Employee,
   AdminLoginInput,
   EmployeeLoginInput,
+  AdminSession,
+  EmployeeSession,
 } from "./auth.types";
-
-type AdminSession = Pick<Admin, "id" | "role"> &
-  Partial<Pick<Admin, "fullName" | "email">>;
-
-type EmployeeSession = Employee & {
-  employmentType?: string;
-  department?: string;
-};
 
 export interface AuthContextValue {
   admin: AdminSession | null;

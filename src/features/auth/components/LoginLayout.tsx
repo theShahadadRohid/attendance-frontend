@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { LuLockKeyhole } from "react-icons/lu";
+import leadLogo from "../../../assets/leadLogo.webp";
 
 interface LoginLayoutProps {
   title: string;
@@ -7,7 +7,7 @@ interface LoginLayoutProps {
   children: ReactNode;
 }
 
-export default function LoginLayout({
+export function LoginLayout({
   title,
   description,
   children,
@@ -15,9 +15,13 @@ export default function LoginLayout({
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
       <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/20">
-            <LuLockKeyhole size={26} />
+        <header className="mb-8 text-center">
+          <div className="mb-5 flex justify-center">
+            <img
+              src={leadLogo}
+              alt="LEAD Bangladesh"
+              className="h-16 w-auto object-contain"
+            />
           </div>
 
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -25,15 +29,15 @@ export default function LoginLayout({
           </h1>
 
           <p className="mt-2 text-sm text-slate-500">{description}</p>
-        </div>
+        </header>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           {children}
-        </div>
+        </section>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
+        <footer className="mt-6 text-center text-xs text-slate-400">
           Attendance Management System
-        </p>
+        </footer>
       </div>
     </main>
   );

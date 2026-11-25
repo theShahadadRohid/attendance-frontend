@@ -43,3 +43,11 @@ export interface ApiResponse<T> {
   success: boolean;
   data: T;
 }
+
+export type AdminSession = Pick<Admin, "id" | "role"> &
+  Partial<Pick<Admin, "fullName" | "email">>;
+
+export type EmployeeSession = Employee & {
+  employmentType?: string;
+  department?: string;
+};
