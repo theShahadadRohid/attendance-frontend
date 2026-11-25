@@ -13,7 +13,10 @@ import {
   FiX,
 } from "react-icons/fi";
 import axios from "axios";
-
+import {
+  normalizeBangladeshPhone,
+  toLocalPhoneNumber,
+} from "../../utils/phone";
 import { adminApi } from "../../lib/api";
 
 interface Employee {
@@ -155,7 +158,7 @@ export default function EmployeeDetailsPage() {
       fullName: employee.fullName,
       designation: employee.designation,
       officialEmail: employee.officialEmail,
-      phoneNumber: employee.phoneNumber,
+      phoneNumber: toLocalPhoneNumber(employee.phoneNumber),
       employmentType: employee.employmentType,
       department: employee.department || "",
     });
@@ -179,7 +182,7 @@ export default function EmployeeDetailsPage() {
       fullName: form.fullName.trim(),
       designation: form.designation.trim(),
       officialEmail: form.officialEmail.trim(),
-      phoneNumber: form.phoneNumber.trim(),
+      phoneNumber: normalizeBangladeshPhone(form.phoneNumber),
       employmentType: form.employmentType,
       ...(form.department?.trim()
         ? { department: form.department.trim() }
@@ -422,8 +425,11 @@ export default function EmployeeDetailsPage() {
               <input
                 required
                 type="tel"
-                pattern="^\\+[1-9]\\d{7,14}$"
-                title="Enter an international phone number, e.g. +8801712345678"
+                inputMode="numeric"
+                maxLength={11}
+                pattern="01[3-9][0-9]{8}"
+                title="Enter an 11-digit Bangladeshi mobile number."
+                placeholder="01712345678"
                 className={inputClassName}
                 value={form.phoneNumber}
                 onChange={(e) => updateField("phoneNumber", e.target.value)}
@@ -503,7 +509,7 @@ export default function EmployeeDetailsPage() {
               <DetailItem
                 icon={FiPhone}
                 label="Phone Number"
-                value={employee.phoneNumber}
+                value={toLocalPhoneNumber(employee.phoneNumber)}
               />
             </div>
           </section>

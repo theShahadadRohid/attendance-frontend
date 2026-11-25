@@ -2,7 +2,7 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import axios from "axios";
-
+import { normalizeBangladeshPhone } from "../../utils/phone";
 import { adminApi } from "../../lib/api";
 import {
   BiChevronLeft,
@@ -128,7 +128,7 @@ export default function EmployeeManagementPage() {
         fullName: input.fullName.trim(),
         designation: input.designation.trim(),
         officialEmail: input.officialEmail.trim(),
-        phoneNumber: input.phoneNumber.trim(),
+        phoneNumber: normalizeBangladeshPhone(input.phoneNumber),
         employmentType: input.employmentType,
         password: input.password,
         ...(input.department.trim()
@@ -331,13 +331,15 @@ export default function EmployeeManagementPage() {
                 <input
                   required
                   type="tel"
-                  pattern="^\\+[1-9][0-9]{7,14}$"
-                  title="Use international format, e.g. +8801XXXXXXXXX"
+                  inputMode="numeric"
+                  maxLength={11}
+                  pattern="01[3-9][0-9]{8}"
+                  title="Enter an 11-digit Bangladeshi mobile number."
                   value={form.phoneNumber}
                   onChange={(event) =>
                     updateForm("phoneNumber", event.target.value)
                   }
-                  placeholder="+8801XXXXXXXXX"
+                  placeholder="01712345678"
                   className={fieldClassName}
                 />
               </FormField>
