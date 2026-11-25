@@ -90,12 +90,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginAdmin = useCallback(async (input: AdminLoginInput) => {
     const result = await loginAdminRequest(input);
 
+    logoutEmployeeRequest();
+
     setAdmin(result.admin);
     setEmployee(null);
   }, []);
 
   const loginEmployee = useCallback(async (input: EmployeeLoginInput) => {
     const result = await loginEmployeeRequest(input);
+
+    logoutAdminRequest();
 
     setEmployee(result.employee);
     setAdmin(null);

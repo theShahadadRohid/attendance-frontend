@@ -1,4 +1,7 @@
+import type { ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+
+import { useAuth } from "./features/auth/useAuth";
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -13,69 +16,187 @@ function PlaceholderPage({ title }: { title: string }) {
   );
 }
 
+function LoadingPage() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-slate-100">
+      <p className="text-sm text-slate-500">Checking your session...</p>
+    </main>
+  );
+}
+
+function AdminRoute({ children }: { children: ReactNode }) {
+  const { admin, employee, isInitializing } = useAuth();
+
+  if (isInitializing) return <LoadingPage />;
+
+  if (employee) {
+    return <Navigate to="/employee/dashboard" replace />;
+  }
+
+  if (!admin) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  return children;
+}
+
+function EmployeeRoute({ children }: { children: ReactNode }) {
+  const { admin, employee, isInitializing } = useAuth();
+
+  if (isInitializing) return <LoadingPage />;
+
+  if (admin) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  if (!employee) {
+    return <Navigate to="/employee/login" replace />;
+  }
+
+  return children;
+}
+
+function GuestRoute({ children }: { children: ReactNode }) {
+  const { admin, employee, isInitializing } = useAuth();
+
+  if (isInitializing) return <LoadingPage />;
+
+  if (admin) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  if (employee) {
+    return <Navigate to="/employee/dashboard" replace />;
+  }
+
+  return children;
+}
+
 function App() {
   return (
     <Routes>
-      {/* Default */}
       <Route path="/" element={<Navigate to="/admin/login" replace />} />
 
-      {/* Admin */}
+      {/* Public routes */}
       <Route
         path="/admin/login"
-        element={<PlaceholderPage title="Admin Login" />}
-      />
-      <Route
-        path="/admin/dashboard"
-        element={<PlaceholderPage title="Admin Dashboard" />}
-      />
-      <Route
-        path="/admin/employees"
-        element={<PlaceholderPage title="Employees" />}
-      />
-      <Route
-        path="/admin/employees/:employeeId"
-        element={<PlaceholderPage title="Employee Details" />}
-      />
-      <Route
-        path="/admin/attendance"
-        element={<PlaceholderPage title="Attendance Management" />}
-      />
-      <Route
-        path="/admin/attendance/:employeeId"
-        element={<PlaceholderPage title="Employee Attendance History" />}
-      />
-      <Route
-        path="/admin/attendance/reviews"
-        element={<PlaceholderPage title="Attendance Reviews" />}
-      />
-      <Route
-        path="/admin/schedule"
-        element={<PlaceholderPage title="Schedule & Holidays" />}
-      />
-      <Route
-        path="/admin/password-resets"
-        element={<PlaceholderPage title="Password Reset Requests" />}
+        element={
+          <GuestRoute>
+            <PlaceholderPage title="Admin Login" />
+          </GuestRoute>
+        }
       />
 
-      {/* Employee */}
       <Route
         path="/employee/login"
-        element={<PlaceholderPage title="Employee Login" />}
-      />
-      <Route
-        path="/employee/dashboard"
-        element={<PlaceholderPage title="Employee Dashboard" />}
-      />
-      <Route
-        path="/employee/attendance"
-        element={<PlaceholderPage title="My Attendance History" />}
-      />
-      <Route
-        path="/employee/settings"
-        element={<PlaceholderPage title="Account Settings" />}
+        element={
+          <GuestRoute>
+            <PlaceholderPage title="Employee Login" />
+          </GuestRoute>
+        }
       />
 
-      {/* Not found */}
+      {/* Admin routes */}
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminRoute>
+            <PlaceholderPage title="Admin Dashboard" />
+          </AdminRoute>
+        }
+      />
+
+      <Route
+        path="/admin/employees"
+        element={
+          <AdminRoute>
+            <PlaceholderPage title="Employees" />
+          </AdminRoute>
+        }
+      />
+
+      <Route
+        path="/admin/employees/:employeeId"
+        element={
+          <AdminRoute>
+            <PlaceholderPage title="Employee Details" />
+          </AdminRoute>
+        }
+      />
+
+      <Route
+        path="/admin/attendance"
+        element={
+          <AdminRoute>
+            <PlaceholderPage title="Attendance Management" />
+          </AdminRoute>
+        }
+      />
+
+      <Route
+        path="/admin/attendance/:employeeId"
+        element={
+          <AdminRoute>
+            <PlaceholderPage title="Employee Attendance History" />
+          </AdminRoute>
+        }
+      />
+
+      <Route
+        path="/admin/attendance/reviews"
+        element={
+          <AdminRoute>
+            <PlaceholderPage title="Attendance Reviews" />
+          </AdminRoute>
+        }
+      />
+
+      <Route
+        path="/admin/schedule"
+        element={
+          <AdminRoute>
+            <PlaceholderPage title="Schedule & Holidays" />
+          </AdminRoute>
+        }
+      />
+
+      <Route
+        path="/admin/password-resets"
+        element={
+          <AdminRoute>
+            <PlaceholderPage title="Password Reset Requests" />
+          </AdminRoute>
+        }
+      />
+
+      {/* Employee routes */}
+      <Route
+        path="/employee/dashboard"
+        element={
+          <EmployeeRoute>
+            <PlaceholderPage title="Employee Dashboard" />
+          </EmployeeRoute>
+        }
+      />
+
+      <Route
+        path="/employee/attendance"
+        element={
+          <EmployeeRoute>
+            <PlaceholderPage title="My Attendance History" />
+          </EmployeeRoute>
+        }
+      />
+
+      <Route
+        path="/employee/settings"
+        element={
+          <EmployeeRoute>
+            <PlaceholderPage title="Account Settings" />
+          </EmployeeRoute>
+        }
+      />
+
       <Route
         path="*"
         element={<PlaceholderPage title="404 - Page Not Found" />}
