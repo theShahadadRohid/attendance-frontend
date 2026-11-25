@@ -11,7 +11,7 @@ import {
   BiSearch,
   BiX,
 } from "react-icons/bi";
-import { FiRefreshCw } from "react-icons/fi";
+import { FiRefreshCw, FiEye, FiEyeOff } from "react-icons/fi";
 import { FaUsers } from "react-icons/fa";
 
 type EmploymentType = "office" | "remote";
@@ -46,7 +46,9 @@ interface EmployeeListResponse {
 interface CreateEmployeeResponse {
   message: string;
   data: {
-    employee: Employee;
+    employee: Employee & {
+      hasAccount: boolean;
+    };
   };
 }
 
@@ -58,6 +60,8 @@ interface EmployeeForm {
   phoneNumber: string;
   employmentType: EmploymentType;
   department: string;
+  password: string;
+  confirmPassword: string;
 }
 
 const PAGE_SIZE = 20;
@@ -73,6 +77,8 @@ const initialForm: EmployeeForm = {
   phoneNumber: "",
   employmentType: "office",
   department: "",
+  password: "",
+  confirmPassword: "",
 };
 
 function getApiError(error: unknown): string {
@@ -95,6 +101,10 @@ export default function EmployeeManagementPage() {
   const [skip, setSkip] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<EmployeeForm>(initialForm);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const employeesQuery = useQuery({
     queryKey: ["admin-employees", statusFilter, skip],
@@ -120,6 +130,7 @@ export default function EmployeeManagementPage() {
         officialEmail: input.officialEmail.trim(),
         phoneNumber: input.phoneNumber.trim(),
         employmentType: input.employmentType,
+        password: input.password,
         ...(input.department.trim()
           ? { department: input.department.trim() }
           : {}),
@@ -138,6 +149,9 @@ export default function EmployeeManagementPage() {
       setSearch("");
       setStatusFilter("active");
       setSkip(0);
+      setFormError("");
+      setShowPassword(false);
+      setShowConfirmPassword(false);
 
       await queryClient.invalidateQueries({
         queryKey: ["admin-employees"],
@@ -171,16 +185,45 @@ export default function EmployeeManagementPage() {
     value: EmployeeForm[K],
   ) {
     setForm((current) => ({ ...current, [key]: value }));
+
+    if (formError) {
+      setFormError("");
+    }
+
+    if (createEmployeeMutation.isError) {
+      createEmployeeMutation.reset();
+    }
   }
 
   function handleCreateEmployee(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setFormError("");
+
+    if (form.password.length < 8 || form.password.length > 128) {
+      setFormError("Password must be between 8 and 128 characters.");
+      return;
+    }
+
+    if (form.password !== form.confirmPassword) {
+      setFormError("Passwords do not match.");
+      return;
+    }
+
     createEmployeeMutation.mutate(form);
   }
 
   function changeStatusFilter(value: StatusFilter) {
     setStatusFilter(value);
     setSkip(0);
+  }
+
+  function closeForm() {
+    setShowForm(false);
+    setForm(initialForm);
+    setFormError("");
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    createEmployeeMutation.reset();
   }
 
   return (
@@ -198,6 +241,7 @@ export default function EmployeeManagementPage() {
           type="button"
           onClick={() => {
             setShowForm((current) => !current);
+            setFormError("");
             createEmployeeMutation.reset();
           }}
           className="flex h-10 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white transition hover:bg-indigo-700"
@@ -212,17 +256,16 @@ export default function EmployeeManagementPage() {
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="mb-5">
             <h2 className="text-lg font-semibold text-slate-900">
-              Create Employee Profile
+              Create Employee
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              This creates an employee profile. Login credentials are created
-              separately.
+              Create an employee profile and login account together.
             </p>
           </div>
 
-          {createEmployeeMutation.isError && (
+          {(formError || createEmployeeMutation.isError) && (
             <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-              {getApiError(createEmployeeMutation.error)}
+              {formError || getApiError(createEmployeeMutation.error)}
             </div>
           )}
 
@@ -288,7 +331,7 @@ export default function EmployeeManagementPage() {
                 <input
                   required
                   type="tel"
-                  pattern="^\+[1-9][0-9]{7,14}$"
+                  pattern="^\\+[1-9][0-9]{7,14}$"
                   title="Use international format, e.g. +8801XXXXXXXXX"
                   value={form.phoneNumber}
                   onChange={(event) =>
@@ -330,15 +373,96 @@ export default function EmployeeManagementPage() {
               </FormField>
             </div>
 
+            {/* Login credentials */}
+            <div className="mt-7 border-t border-slate-100 pt-6">
+              <div className="mb-5">
+                <h3 className="text-base font-semibold text-slate-900">
+                  Login Credentials
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Set the employee's initial password. They can change it later.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <FormField label="Password" required>
+                  <div className="relative">
+                    <input
+                      required
+                      type={showPassword ? "text" : "password"}
+                      minLength={8}
+                      maxLength={128}
+                      autoComplete="new-password"
+                      value={form.password}
+                      onChange={(event) =>
+                        updateForm("password", event.target.value)
+                      }
+                      placeholder="Minimum 8 characters"
+                      className={`${fieldClassName} pr-11`}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((current) => !current)}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
+                    >
+                      {showPassword ? (
+                        <FiEyeOff size={17} />
+                      ) : (
+                        <FiEye size={17} />
+                      )}
+                    </button>
+                  </div>
+                </FormField>
+
+                <FormField label="Confirm Password" required>
+                  <div className="relative">
+                    <input
+                      required
+                      type={showConfirmPassword ? "text" : "password"}
+                      minLength={8}
+                      maxLength={128}
+                      autoComplete="new-password"
+                      value={form.confirmPassword}
+                      onChange={(event) =>
+                        updateForm("confirmPassword", event.target.value)
+                      }
+                      placeholder="Enter password again"
+                      className={`${fieldClassName} pr-11`}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword((current) => !current)
+                      }
+                      aria-label={
+                        showConfirmPassword
+                          ? "Hide confirm password"
+                          : "Show confirm password"
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
+                    >
+                      {showConfirmPassword ? (
+                        <FiEyeOff size={17} />
+                      ) : (
+                        <FiEye size={17} />
+                      )}
+                    </button>
+                  </div>
+                </FormField>
+              </div>
+            </div>
+
             <div className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
               <button
                 type="button"
-                onClick={() => {
-                  setShowForm(false);
-                  setForm(initialForm);
-                  createEmployeeMutation.reset();
-                }}
-                className="h-10 rounded-xl border border-slate-200 px-5 text-sm font-medium text-slate-600 hover:bg-slate-50"
+                onClick={closeForm}
+                disabled={createEmployeeMutation.isPending}
+                className="h-10 rounded-xl border border-slate-200 px-5 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
               >
                 Cancel
               </button>

@@ -26,6 +26,7 @@ interface Employee {
   employmentType: "office" | "remote";
   department?: string;
   isActive: boolean;
+  hasAccount: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -209,7 +210,9 @@ export default function EmployeeDetailsPage() {
         <h2 className="font-semibold text-slate-900">
           Unable to load employee
         </h2>
+
         <p className="mt-2 text-sm text-red-600">{getErrorMessage(error)}</p>
+
         <button
           type="button"
           onClick={() => void refetch()}
@@ -237,6 +240,7 @@ export default function EmployeeDetailsPage() {
             <h1 className="text-2xl font-bold text-slate-900">
               Employee Details
             </h1>
+
             <p className="mt-1 text-sm text-slate-500">
               View and manage employee profile information.
             </p>
@@ -275,9 +279,11 @@ export default function EmployeeDetailsPage() {
             <h2 className="text-xl font-bold text-slate-900">
               {employee.fullName}
             </h2>
+
             <p className="mt-1 text-sm text-slate-500">
               {employee.designation}
             </p>
+
             <p className="mt-1 text-xs font-semibold tracking-wide text-slate-400">
               {employee.employeeCode}
             </p>
@@ -295,6 +301,52 @@ export default function EmployeeDetailsPage() {
         </div>
       </section>
 
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div>
+          <h3 className="text-base font-bold text-slate-900">Login Account</h3>
+
+          <p className="mt-1 text-sm text-slate-500">
+            Login account status for this employee.
+          </p>
+        </div>
+
+        {employee.hasAccount ? (
+          <div className="mt-5 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+            <div className="rounded-lg bg-emerald-100 p-2 text-emerald-700">
+              <FiUser size={20} />
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-emerald-800">
+                Login account created
+              </p>
+
+              <p className="mt-1 text-sm text-emerald-700">
+                This employee has a login account and can use their registered
+                phone number to log in.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <div className="rounded-lg bg-amber-100 p-2 text-amber-700">
+              <FiUser size={20} />
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-amber-800">
+                No login account
+              </p>
+
+              <p className="mt-1 text-sm text-amber-700">
+                This employee does not have a login account. Login credentials
+                are now created when adding a new employee.
+              </p>
+            </div>
+          </div>
+        )}
+      </section>
+
       {isEditing && form ? (
         <form
           onSubmit={handleSubmit}
@@ -304,6 +356,7 @@ export default function EmployeeDetailsPage() {
             <h3 className="text-base font-bold text-slate-900">
               Edit Employee Information
             </h3>
+
             <p className="mt-1 text-sm text-slate-500">
               Update the employee's profile details.
             </p>
@@ -320,6 +373,7 @@ export default function EmployeeDetailsPage() {
               <span className="text-sm font-medium text-slate-700">
                 Full Name
               </span>
+
               <input
                 required
                 minLength={2}
@@ -334,6 +388,7 @@ export default function EmployeeDetailsPage() {
               <span className="text-sm font-medium text-slate-700">
                 Designation
               </span>
+
               <input
                 required
                 minLength={2}
@@ -348,6 +403,7 @@ export default function EmployeeDetailsPage() {
               <span className="text-sm font-medium text-slate-700">
                 Official Email
               </span>
+
               <input
                 required
                 type="email"
@@ -362,10 +418,11 @@ export default function EmployeeDetailsPage() {
               <span className="text-sm font-medium text-slate-700">
                 Phone Number
               </span>
+
               <input
                 required
                 type="tel"
-                pattern="^\+[1-9]\d{7,14}$"
+                pattern="^\\+[1-9]\\d{7,14}$"
                 title="Enter an international phone number, e.g. +8801712345678"
                 className={inputClassName}
                 value={form.phoneNumber}
@@ -377,6 +434,7 @@ export default function EmployeeDetailsPage() {
               <span className="text-sm font-medium text-slate-700">
                 Department
               </span>
+
               <input
                 maxLength={80}
                 minLength={2}
@@ -390,6 +448,7 @@ export default function EmployeeDetailsPage() {
               <span className="text-sm font-medium text-slate-700">
                 Employment Type
               </span>
+
               <select
                 className={inputClassName}
                 value={form.employmentType}
@@ -440,6 +499,7 @@ export default function EmployeeDetailsPage() {
                 label="Official Email"
                 value={employee.officialEmail}
               />
+
               <DetailItem
                 icon={FiPhone}
                 label="Phone Number"
@@ -459,16 +519,19 @@ export default function EmployeeDetailsPage() {
                 label="Employee Code"
                 value={employee.employeeCode}
               />
+
               <DetailItem
                 icon={FiUser}
                 label="Designation"
                 value={employee.designation}
               />
+
               <DetailItem
                 icon={FiUser}
                 label="Department"
                 value={employee.department || "Not assigned"}
               />
+
               <DetailItem
                 icon={FiClock}
                 label="Employment Type"
@@ -476,6 +539,7 @@ export default function EmployeeDetailsPage() {
                   employee.employmentType === "office" ? "Office" : "Remote"
                 }
               />
+
               <DetailItem
                 icon={FiCalendar}
                 label="Created On"
