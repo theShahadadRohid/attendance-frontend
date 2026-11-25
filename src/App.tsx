@@ -5,6 +5,8 @@ import { useAuth } from "./features/auth/useAuth";
 import { AdminLoginPage, EmployeeLoginPage } from "./features/auth/LoginPages";
 
 import AdminLayout from "./layouts/admin/AdminLayout";
+import EmployeeManagementPage from "./features/employee/EmployeeManagementPage";
+import EmployeeDetailsPage from "./features/employee/EmployeeDetailsPage";
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -110,15 +112,9 @@ function App() {
 
         <Route path="dashboard" element={<AdminDashboardPage />} />
 
-        <Route
-          path="employees"
-          element={<PlaceholderPage title="Employees" />}
-        />
+        <Route path="employees" element={<EmployeeManagementPage />} />
 
-        <Route
-          path="employees/:employeeId"
-          element={<PlaceholderPage title="Employee Details" />}
-        />
+        <Route path="employees/:employeeId" element={<EmployeeDetailsPage />} />
 
         <Route
           path="attendance"
