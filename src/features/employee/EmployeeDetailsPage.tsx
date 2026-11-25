@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState, type FormEvent } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import {
   FiArrowLeft,
@@ -7,6 +8,9 @@ import {
   FiMail,
   FiPhone,
   FiUser,
+  FiEdit2,
+  FiSave,
+  FiX,
 } from "react-icons/fi";
 import axios from "axios";
 
@@ -33,12 +37,21 @@ interface EmployeeResponse {
   };
 }
 
+interface UpdateEmployeeInput {
+  fullName: string;
+  designation: string;
+  officialEmail: string;
+  phoneNumber: string;
+  employmentType: "office" | "remote";
+  department?: string;
+}
+
 function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     return (
       error.response?.data?.message ||
       error.response?.data?.error ||
-      "Failed to load employee details."
+      "Something went wrong."
     );
   }
 
@@ -52,6 +65,9 @@ function formatDate(date: string): string {
     year: "numeric",
   });
 }
+
+const inputClassName =
+  "h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-indigo-400";
 
 function DetailItem({
   icon: Icon,
@@ -80,6 +96,11 @@ function DetailItem({
 
 export default function EmployeeDetailsPage() {
   const { employeeId } = useParams<{ employeeId: string }>();
+  const queryClient = useQueryClient();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [form, setForm] = useState<UpdateEmployeeInput | null>(null);
+  const [updateError, setUpdateError] = useState("");
 
   const {
     data: employee,
@@ -98,6 +119,81 @@ export default function EmployeeDetailsPage() {
     },
     enabled: Boolean(employeeId),
   });
+
+  const updateMutation = useMutation({
+    mutationFn: async (input: UpdateEmployeeInput) => {
+      const response = await adminApi.patch<EmployeeResponse>(
+        `/employees/${employeeId}`,
+        input,
+      );
+
+      return response.data.data.employee;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["admin-employee", employeeId],
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ["admin-employees"],
+      });
+
+      setIsEditing(false);
+      setForm(null);
+      setUpdateError("");
+    },
+    onError: (error: unknown) => {
+      setUpdateError(getErrorMessage(error));
+    },
+  });
+
+  function startEditing() {
+    if (!employee) return;
+
+    setForm({
+      fullName: employee.fullName,
+      designation: employee.designation,
+      officialEmail: employee.officialEmail,
+      phoneNumber: employee.phoneNumber,
+      employmentType: employee.employmentType,
+      department: employee.department || "",
+    });
+
+    setUpdateError("");
+    setIsEditing(true);
+  }
+
+  function cancelEditing() {
+    setIsEditing(false);
+    setForm(null);
+    setUpdateError("");
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!form) return;
+
+    const payload: UpdateEmployeeInput = {
+      fullName: form.fullName.trim(),
+      designation: form.designation.trim(),
+      officialEmail: form.officialEmail.trim(),
+      phoneNumber: form.phoneNumber.trim(),
+      employmentType: form.employmentType,
+      ...(form.department?.trim()
+        ? { department: form.department.trim() }
+        : {}),
+    };
+
+    updateMutation.mutate(payload);
+  }
+
+  function updateField<K extends keyof UpdateEmployeeInput>(
+    field: K,
+    value: UpdateEmployeeInput[K],
+  ) {
+    setForm((current) => (current ? { ...current, [field]: value } : current));
+  }
 
   if (isLoading) {
     return (
@@ -142,17 +238,30 @@ export default function EmployeeDetailsPage() {
               Employee Details
             </h1>
             <p className="mt-1 text-sm text-slate-500">
-              View employee profile and employment information.
+              View and manage employee profile information.
             </p>
           </div>
 
-          <Link
-            to={`/admin/attendance/${employee._id}`}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
-          >
-            <FiCalendar size={17} />
-            Attendance History
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to={`/admin/attendance/${employee._id}`}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              <FiCalendar size={17} />
+              Attendance History
+            </Link>
+
+            {!isEditing && (
+              <button
+                type="button"
+                onClick={startEditing}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+              >
+                <FiEdit2 size={16} />
+                Edit Profile
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -186,58 +295,196 @@ export default function EmployeeDetailsPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 className="text-base font-bold text-slate-900">
-          Contact Information
-        </h3>
+      {isEditing && form ? (
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+        >
+          <div>
+            <h3 className="text-base font-bold text-slate-900">
+              Edit Employee Information
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              Update the employee's profile details.
+            </p>
+          </div>
 
-        <div className="mt-6 grid gap-6 sm:grid-cols-2">
-          <DetailItem
-            icon={FiMail}
-            label="Official Email"
-            value={employee.officialEmail}
-          />
-          <DetailItem
-            icon={FiPhone}
-            label="Phone Number"
-            value={employee.phoneNumber}
-          />
-        </div>
-      </section>
+          {updateError && (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {updateError}
+            </div>
+          )}
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 className="text-base font-bold text-slate-900">
-          Employment Information
-        </h3>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <label className="space-y-2">
+              <span className="text-sm font-medium text-slate-700">
+                Full Name
+              </span>
+              <input
+                required
+                minLength={2}
+                maxLength={100}
+                className={inputClassName}
+                value={form.fullName}
+                onChange={(e) => updateField("fullName", e.target.value)}
+              />
+            </label>
 
-        <div className="mt-6 grid gap-6 sm:grid-cols-2">
-          <DetailItem
-            icon={FiUser}
-            label="Employee Code"
-            value={employee.employeeCode}
-          />
-          <DetailItem
-            icon={FiUser}
-            label="Designation"
-            value={employee.designation}
-          />
-          <DetailItem
-            icon={FiUser}
-            label="Department"
-            value={employee.department || "Not assigned"}
-          />
-          <DetailItem
-            icon={FiClock}
-            label="Employment Type"
-            value={employee.employmentType === "office" ? "Office" : "Remote"}
-          />
-          <DetailItem
-            icon={FiCalendar}
-            label="Created On"
-            value={formatDate(employee.createdAt)}
-          />
-        </div>
-      </section>
+            <label className="space-y-2">
+              <span className="text-sm font-medium text-slate-700">
+                Designation
+              </span>
+              <input
+                required
+                minLength={2}
+                maxLength={100}
+                className={inputClassName}
+                value={form.designation}
+                onChange={(e) => updateField("designation", e.target.value)}
+              />
+            </label>
+
+            <label className="space-y-2">
+              <span className="text-sm font-medium text-slate-700">
+                Official Email
+              </span>
+              <input
+                required
+                type="email"
+                maxLength={254}
+                className={inputClassName}
+                value={form.officialEmail}
+                onChange={(e) => updateField("officialEmail", e.target.value)}
+              />
+            </label>
+
+            <label className="space-y-2">
+              <span className="text-sm font-medium text-slate-700">
+                Phone Number
+              </span>
+              <input
+                required
+                type="tel"
+                pattern="^\+[1-9]\d{7,14}$"
+                title="Enter an international phone number, e.g. +8801712345678"
+                className={inputClassName}
+                value={form.phoneNumber}
+                onChange={(e) => updateField("phoneNumber", e.target.value)}
+              />
+            </label>
+
+            <label className="space-y-2">
+              <span className="text-sm font-medium text-slate-700">
+                Department
+              </span>
+              <input
+                maxLength={80}
+                minLength={2}
+                className={inputClassName}
+                value={form.department || ""}
+                onChange={(e) => updateField("department", e.target.value)}
+              />
+            </label>
+
+            <label className="space-y-2">
+              <span className="text-sm font-medium text-slate-700">
+                Employment Type
+              </span>
+              <select
+                className={inputClassName}
+                value={form.employmentType}
+                onChange={(e) =>
+                  updateField(
+                    "employmentType",
+                    e.target.value as "office" | "remote",
+                  )
+                }
+              >
+                <option value="office">Office</option>
+                <option value="remote">Remote</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-5">
+            <button
+              type="button"
+              onClick={cancelEditing}
+              disabled={updateMutation.isPending}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+            >
+              <FiX size={16} />
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              disabled={updateMutation.isPending}
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <FiSave size={16} />
+              {updateMutation.isPending ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <>
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 className="text-base font-bold text-slate-900">
+              Contact Information
+            </h3>
+
+            <div className="mt-6 grid gap-6 sm:grid-cols-2">
+              <DetailItem
+                icon={FiMail}
+                label="Official Email"
+                value={employee.officialEmail}
+              />
+              <DetailItem
+                icon={FiPhone}
+                label="Phone Number"
+                value={employee.phoneNumber}
+              />
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 className="text-base font-bold text-slate-900">
+              Employment Information
+            </h3>
+
+            <div className="mt-6 grid gap-6 sm:grid-cols-2">
+              <DetailItem
+                icon={FiUser}
+                label="Employee Code"
+                value={employee.employeeCode}
+              />
+              <DetailItem
+                icon={FiUser}
+                label="Designation"
+                value={employee.designation}
+              />
+              <DetailItem
+                icon={FiUser}
+                label="Department"
+                value={employee.department || "Not assigned"}
+              />
+              <DetailItem
+                icon={FiClock}
+                label="Employment Type"
+                value={
+                  employee.employmentType === "office" ? "Office" : "Remote"
+                }
+              />
+              <DetailItem
+                icon={FiCalendar}
+                label="Created On"
+                value={formatDate(employee.createdAt)}
+              />
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 }
