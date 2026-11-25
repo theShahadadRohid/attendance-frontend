@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-
+import { AdminLoginPage, EmployeeLoginPage } from "./features/auth/LoginPages";
 import { useAuth } from "./features/auth/useAuth";
 
 function PlaceholderPage({ title }: { title: string }) {
@@ -82,7 +82,7 @@ function App() {
         path="/admin/login"
         element={
           <GuestRoute>
-            <PlaceholderPage title="Admin Login" />
+            <AdminLoginPage></AdminLoginPage>
           </GuestRoute>
         }
       />
@@ -91,7 +91,7 @@ function App() {
         path="/employee/login"
         element={
           <GuestRoute>
-            <PlaceholderPage title="Employee Login" />
+            <EmployeeLoginPage />
           </GuestRoute>
         }
       />
