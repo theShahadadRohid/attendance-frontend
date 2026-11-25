@@ -1,24 +1,86 @@
-import { BiCheckCircle } from "react-icons/bi";
+import { Navigate, Route, Routes } from "react-router-dom";
+
+function PlaceholderPage({ title }: { title: string }) {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
+      <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+        <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
+        <p className="mt-2 text-sm text-slate-500">
+          This page is under development.
+        </p>
+      </div>
+    </main>
+  );
+}
 
 function App() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
-        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-green-100">
-          <BiCheckCircle className="h-8 w-8 text-green-600" />
-        </div>
+    <Routes>
+      {/* Default */}
+      <Route path="/" element={<Navigate to="/admin/login" replace />} />
 
-        <h1 className="text-2xl font-bold text-slate-900">Attendance System</h1>
+      {/* Admin */}
+      <Route
+        path="/admin/login"
+        element={<PlaceholderPage title="Admin Login" />}
+      />
+      <Route
+        path="/admin/dashboard"
+        element={<PlaceholderPage title="Admin Dashboard" />}
+      />
+      <Route
+        path="/admin/employees"
+        element={<PlaceholderPage title="Employees" />}
+      />
+      <Route
+        path="/admin/employees/:employeeId"
+        element={<PlaceholderPage title="Employee Details" />}
+      />
+      <Route
+        path="/admin/attendance"
+        element={<PlaceholderPage title="Attendance Management" />}
+      />
+      <Route
+        path="/admin/attendance/:employeeId"
+        element={<PlaceholderPage title="Employee Attendance History" />}
+      />
+      <Route
+        path="/admin/attendance/reviews"
+        element={<PlaceholderPage title="Attendance Reviews" />}
+      />
+      <Route
+        path="/admin/schedule"
+        element={<PlaceholderPage title="Schedule & Holidays" />}
+      />
+      <Route
+        path="/admin/password-resets"
+        element={<PlaceholderPage title="Password Reset Requests" />}
+      />
 
-        <p className="mt-2 text-sm text-slate-500">
-          Frontend project is successfully configured.
-        </p>
+      {/* Employee */}
+      <Route
+        path="/employee/login"
+        element={<PlaceholderPage title="Employee Login" />}
+      />
+      <Route
+        path="/employee/dashboard"
+        element={<PlaceholderPage title="Employee Dashboard" />}
+      />
+      <Route
+        path="/employee/attendance"
+        element={<PlaceholderPage title="My Attendance History" />}
+      />
+      <Route
+        path="/employee/settings"
+        element={<PlaceholderPage title="Account Settings" />}
+      />
 
-        <div className="mt-6 rounded-lg bg-green-50 p-4 text-sm font-medium text-green-700">
-          React + TypeScript + Tailwind CSS are ready.
-        </div>
-      </div>
-    </main>
+      {/* Not found */}
+      <Route
+        path="*"
+        element={<PlaceholderPage title="404 - Page Not Found" />}
+      />
+    </Routes>
   );
 }
 
