@@ -30,11 +30,11 @@ export function AttendanceSummary({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
-            <FiCalendar className="text-[#8EAC31]" />
+            <FiCalendar className="text-[#F40026]" />
             Today's Attendance
           </div>
 
-          <h2 className="mt-2 text-lg font-bold tracking-tight text-[#171719]">
+          <h2 className="mt-2 text-lg font-bold tracking-tight text-[#030708]">
             {formatDate(date, timeZone)}
           </h2>
         </div>
@@ -42,35 +42,59 @@ export function AttendanceSummary({
         <AttendanceStatusBadge attendance={attendance} />
       </div>
 
-      <div className="mt-7 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-5 transition hover:border-[#D3F269]">
-          <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F6DE] text-[#789522]">
+      {/* Attendance timeline */}
+      <div className="relative mt-7 grid grid-cols-2 gap-4">
+        {/* Connecting line */}
+        <div className="absolute left-[25%] right-[25%] top-[22px] h-0.5 bg-slate-200" />
+
+        {/* Check-in */}
+        <div className="relative rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+          <div className="relative z-10 flex items-center gap-2 text-sm font-medium text-slate-500">
+            <span
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-4 border-white ${
+                attendance?.checkInAt
+                  ? "bg-[#F40026] text-white"
+                  : "bg-slate-200 text-slate-500"
+              }`}
+            >
               <FiLogIn />
             </span>
             Check-in
           </div>
 
-          <p className="mt-4 text-2xl font-bold tracking-tight text-[#171719]">
+          <p className="mt-4 text-xl font-bold tracking-tight text-[#030708] sm:text-2xl">
             {formatTime(attendance?.checkInAt, timeZone)}
           </p>
 
           {attendance?.checkInAt && (
-            <p className="mt-2 text-xs font-medium text-slate-500">
+            <p
+              className={`mt-2 text-xs font-semibold ${
+                attendance.checkInStatus === "late"
+                  ? "text-[#F40026]"
+                  : "text-slate-500"
+              }`}
+            >
               {getCheckInLabel(attendance.checkInStatus)}
             </p>
           )}
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-5 transition hover:border-[#D3F269]">
-          <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0F6DE] text-[#789522]">
+        {/* Check-out */}
+        <div className="relative rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+          <div className="relative z-10 flex items-center gap-2 text-sm font-medium text-slate-500">
+            <span
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-4 border-white ${
+                attendance?.checkOutAt
+                  ? "bg-[#030708] text-white"
+                  : "bg-slate-200 text-slate-500"
+              }`}
+            >
               <FiLogOut />
             </span>
             Check-out
           </div>
 
-          <p className="mt-4 text-2xl font-bold tracking-tight text-[#171719]">
+          <p className="mt-4 text-xl font-bold tracking-tight text-[#030708] sm:text-2xl">
             {formatTime(attendance?.checkOutAt, timeZone)}
           </p>
 
@@ -86,25 +110,36 @@ export function AttendanceSummary({
         </div>
       </div>
 
+      {/* Check-in reason */}
       {attendance?.checkInReason && (
-        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-amber-800">
-          <strong>Check-in reason:</strong> {attendance.checkInReason}
+        <div className="mt-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <FiAlertCircle className="mt-0.5 shrink-0 text-[#F40026]" />
+
+          <div>
+            <strong className="font-semibold">Late check-in reason</strong>
+            <p className="mt-1 leading-6">{attendance.checkInReason}</p>
+          </div>
         </div>
       )}
 
+      {/* Checkout note */}
       {attendance?.checkOutNote && (
-        <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50/70 p-4 text-sm text-blue-800">
-          <strong>Checkout note:</strong> {attendance.checkOutNote}
+        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+          <strong className="font-semibold text-[#030708]">
+            Checkout note
+          </strong>
+          <p className="mt-1 leading-6">{attendance.checkOutNote}</p>
         </div>
       )}
 
+      {/* Review notice */}
       {attendance?.needsReview && (
-        <div className="mt-4 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          <FiAlertCircle className="mt-0.5 shrink-0" />
+        <div className="mt-4 flex gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <FiAlertCircle className="mt-0.5 shrink-0 text-[#F40026]" />
 
           <div>
             <strong>Attendance needs review</strong>
-            <p className="mt-1">
+            <p className="mt-1 leading-6">
               {attendance.reviewReason ??
                 "Your attendance record is awaiting admin review."}
             </p>
@@ -112,10 +147,11 @@ export function AttendanceSummary({
         </div>
       )}
 
+      {/* Auto checkout */}
       {attendance?.isAutoCheckout && (
         <div className="mt-4 flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
           <FiClock className="mt-0.5 shrink-0 text-slate-400" />
-          Your checkout was recorded automatically.
+          <p>Your checkout was recorded automatically.</p>
         </div>
       )}
     </>

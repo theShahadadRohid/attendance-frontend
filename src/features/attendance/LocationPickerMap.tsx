@@ -111,16 +111,6 @@ export default function LocationPickerMap({
           />
         </MapContainer>
       </div>
-
-      <p className="text-sm text-gray-600">
-        Drag the red marker to adjust your location.
-      </p>
-
-      <div className="text-sm">
-        Latitude: {position.latitude.toFixed(6)}
-        <br />
-        Longitude: {position.longitude.toFixed(6)}
-      </div>
     </div>
   );
 }

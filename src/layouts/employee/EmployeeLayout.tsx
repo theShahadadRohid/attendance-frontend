@@ -59,8 +59,8 @@ export default function EmployeeLayout() {
   const sidebarContent = (
     <>
       {/* Brand */}
-      <div className="flex h-20 items-center gap-3 border-b border-slate-800 px-6">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white">
+      <div className="flex h-20 items-center gap-3 border-b border-white/10 px-6">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F40026] text-white">
           <BsShieldCheck size={22} />
         </div>
 
@@ -68,7 +68,7 @@ export default function EmployeeLayout() {
           <h1 className="text-base font-bold tracking-tight text-white">
             Attendance
           </h1>
-          <p className="text-xs text-slate-400">Employee Portal</p>
+          <p className="text-xs text-white/50">Employee Portal</p>
         </div>
       </div>
 
@@ -76,7 +76,7 @@ export default function EmployeeLayout() {
       <div className="flex-1 overflow-y-auto px-4 py-6">
         {navigation.map((section) => (
           <div key={section.label} className="mb-7">
-            <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500">
+            <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-white/40">
               {section.label}
             </p>
 
@@ -91,10 +91,10 @@ export default function EmployeeLayout() {
                     onClick={closeMobileMenu}
                     className={({ isActive }) =>
                       [
-                        "group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition",
+                        "group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all",
                         isActive
-                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-950/20"
-                          : "text-slate-400 hover:bg-slate-800 hover:text-white",
+                          ? "bg-[#F40026] text-white shadow-lg shadow-black/20"
+                          : "text-white/60 hover:bg-white/10 hover:text-white",
                       ].join(" ")
                     }
                   >
@@ -104,7 +104,7 @@ export default function EmployeeLayout() {
 
                     <BiChevronRight
                       size={15}
-                      className="opacity-0 transition group-hover:opacity-60"
+                      className="opacity-0 transition group-hover:opacity-70"
                     />
                   </NavLink>
                 );
@@ -115,10 +115,10 @@ export default function EmployeeLayout() {
       </div>
 
       {/* Logout */}
-      <div className="border-t border-slate-800 p-4">
+      <div className="border-t border-white/10 p-4">
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-400 transition hover:bg-red-500/10 hover:text-red-400"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-white/60 transition hover:bg-[#F40026]/10 hover:text-[#F40026]"
         >
           <BiLogOut size={19} />
           Sign out
@@ -128,9 +128,9 @@ export default function EmployeeLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-white">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-slate-950 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-[#030708] lg:flex">
         {sidebarContent}
       </aside>
 
@@ -143,11 +143,11 @@ export default function EmployeeLayout() {
             className="absolute inset-0 bg-black/50"
           />
 
-          <aside className="relative flex h-full w-72 flex-col bg-slate-950 shadow-2xl">
+          <aside className="relative flex h-full w-72 flex-col bg-[#030708] shadow-2xl">
             <button
               onClick={closeMobileMenu}
               aria-label="Close menu"
-              className="absolute right-4 top-6 z-10 rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white"
+              className="absolute right-4 top-6 z-10 rounded-lg p-2 text-white/60 transition hover:bg-white/10 hover:text-white"
             >
               <BiX size={20} />
             </button>
@@ -165,13 +165,13 @@ export default function EmployeeLayout() {
             <button
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open navigation"
-              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
+              className="rounded-lg p-2 text-[#030708] transition hover:bg-slate-100 lg:hidden"
             >
               <BiMenu size={22} />
             </button>
 
             <div>
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-sm font-bold text-[#030708]">
                 Employee Portal
               </p>
               <p className="text-xs text-slate-500">Attendance management</p>
@@ -180,7 +180,7 @@ export default function EmployeeLayout() {
 
           <div className="flex items-center gap-3">
             <div className="hidden text-right sm:block">
-              <p className="text-sm font-semibold text-slate-800">
+              <p className="text-sm font-semibold text-[#030708]">
                 {employee?.fullName || "Employee"}
               </p>
               <p className="text-xs text-slate-500">
@@ -188,14 +188,14 @@ export default function EmployeeLayout() {
               </p>
             </div>
 
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold uppercase text-indigo-700">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F40026]/10 text-sm font-bold uppercase text-[#F40026]">
               {employee?.fullName?.charAt(0) || "E"}
             </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="p-4 sm:p-6 lg:p-8">
+        <main className="min-h-[calc(100vh-5rem)] bg-white p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>

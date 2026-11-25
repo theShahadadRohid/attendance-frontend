@@ -6,7 +6,6 @@ import { useAuth } from "../auth/useAuth";
 import { getErrorDetails } from "./utils/attendance-errors";
 import { getCurrentLocation, type Coordinates } from "./utils/geolocation";
 
-import { LocationSection } from "./components/LocationSection";
 import { AttendanceSummary } from "./components/AttendanceSummary";
 import { AttendanceActions } from "./components/AttendanceActions";
 import { useTodayAttendance } from "./hooks/useTodayAttendance";
@@ -18,6 +17,8 @@ const OFFICE_LOCATION = {
 };
 
 const OFFICE_RADIUS_METERS = 50;
+
+type LocationAction = "check-in" | "check-out" | null;
 
 export default function EmployeeDashboardPage() {
   const { employee } = useAuth();
@@ -31,6 +32,8 @@ export default function EmployeeDashboardPage() {
   const [currentLocation, setCurrentLocation] = useState<Coordinates | null>(
     null,
   );
+  const [locationAction, setLocationAction] = useState<LocationAction>(null);
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
 
   const {
     data: todayData,
@@ -56,26 +59,36 @@ export default function EmployeeDashboardPage() {
       onCheckInSuccess: () => {
         setCheckInReason("");
         setShowCheckInReason(false);
+        setCurrentLocation(null);
+        setLocationAction(null);
       },
 
       onCheckOutSuccess: () => {
         setCheckOutNote("");
         setShowCheckOutNote(false);
+        setCurrentLocation(null);
+        setLocationAction(null);
       },
     });
 
-  const handleGetMyLocation = async () => {
+  async function detectLocation(action: Exclude<LocationAction, null>) {
     try {
       setActionError("");
+      setIsDetectingLocation(true);
 
       const location = await getCurrentLocation();
+
       setCurrentLocation(location);
+      setLocationAction(action);
     } catch (error) {
+      setLocationAction(null);
       setActionError(
         error instanceof Error ? error.message : "Unable to get your location.",
       );
+    } finally {
+      setIsDetectingLocation(false);
     }
-  };
+  }
 
   async function handleCheckIn() {
     setActionError("");
@@ -85,22 +98,17 @@ export default function EmployeeDashboardPage() {
       return;
     }
 
-    try {
-      const location = currentLocation ?? (await getCurrentLocation());
-
-      setCurrentLocation(location);
-
-      checkInMutation.mutate({
-        location,
-        ...(checkInReason.trim() && {
-          reason: checkInReason.trim(),
-        }),
-      });
-    } catch (error) {
-      setActionError(
-        error instanceof Error ? error.message : "Unable to get your location.",
-      );
+    if (locationAction !== "check-in" || !currentLocation) {
+      await detectLocation("check-in");
+      return;
     }
+
+    checkInMutation.mutate({
+      location: currentLocation,
+      ...(checkInReason.trim() && {
+        reason: checkInReason.trim(),
+      }),
+    });
   }
 
   async function handleCheckOut() {
@@ -111,29 +119,24 @@ export default function EmployeeDashboardPage() {
       return;
     }
 
-    try {
-      const location = currentLocation ?? (await getCurrentLocation());
-
-      setCurrentLocation(location);
-
-      checkOutMutation.mutate({
-        location,
-        ...(checkOutNote.trim() && {
-          note: checkOutNote.trim(),
-        }),
-      });
-    } catch (error) {
-      setActionError(
-        error instanceof Error ? error.message : "Unable to get your location.",
-      );
+    if (locationAction !== "check-out" || !currentLocation) {
+      await detectLocation("check-out");
+      return;
     }
+
+    checkOutMutation.mutate({
+      location: currentLocation,
+      ...(checkOutNote.trim() && {
+        note: checkOutNote.trim(),
+      }),
+    });
   }
 
   if (isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-white px-4">
-        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-6 py-5">
-          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#D3F269]" />
+      <main className="flex min-h-[60vh] items-center justify-center bg-white px-4">
+        <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-6 py-5">
+          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#F40026]" />
           <p className="text-sm font-medium text-slate-600">
             Loading your attendance...
           </p>
@@ -146,13 +149,13 @@ export default function EmployeeDashboardPage() {
     const errorMessage = getErrorDetails(error).message;
 
     return (
-      <main className="flex min-h-screen items-center justify-center bg-white px-4 py-8">
+      <main className="flex min-h-[60vh] items-center justify-center bg-white px-4 py-8">
         <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-red-100 bg-red-50">
-            <FiAlertCircle className="text-xl text-red-500" />
+            <FiAlertCircle className="text-xl text-[#F40026]" />
           </div>
 
-          <h1 className="mt-5 text-lg font-bold text-slate-900">
+          <h1 className="mt-5 text-lg font-bold text-[#030708]">
             Unable to load attendance
           </h1>
 
@@ -162,7 +165,7 @@ export default function EmployeeDashboardPage() {
 
           <button
             onClick={() => refetch()}
-            className="mt-6 inline-flex items-center justify-center rounded-xl bg-[#D3F269] px-5 py-2.5 text-sm font-bold text-[#171719] transition hover:bg-[#C4E65C] focus:outline-none focus:ring-2 focus:ring-[#D3F269]/50 focus:ring-offset-2"
+            className="mt-6 inline-flex items-center justify-center rounded-xl bg-[#F40026] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#D90022] focus:outline-none focus:ring-2 focus:ring-[#F40026]/30 focus:ring-offset-2"
           >
             Try again
           </button>
@@ -178,53 +181,53 @@ export default function EmployeeDashboardPage() {
   const hasCheckedOut = Boolean(attendance?.checkOutAt);
 
   return (
-    <main className="min-h-screen bg-white px-4 py-7 text-[#171719] sm:px-6 sm:py-9 lg:px-8">
-      <div className="mx-auto max-w-5xl">
-        <header className="mb-8 flex flex-wrap items-center justify-between gap-5">
+    <main className="min-h-full w-full bg-white text-[#030708]">
+      <div className="w-full">
+        {/* Page header */}
+        <header className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-5">
           <div>
-            <div className="mb-3 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#B7D94D]" />
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[#F40026]" />
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
                 Employee Portal
               </p>
             </div>
 
-            <h1 className="text-2xl font-bold tracking-tight text-[#171719] sm:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight text-[#030708] sm:text-3xl">
               Welcome, {employee?.fullName ?? "Employee"}
             </h1>
 
-            <p className="mt-2 text-sm text-slate-500">
-              Here's your attendance overview for today.
+            <p className="mt-1.5 text-sm text-slate-500">
+              Manage your attendance and check your daily activity.
             </p>
           </div>
 
           <button
+            type="button"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-[#B7D94D] hover:bg-[#F8FBEF] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-[#030708] transition hover:border-[#F40026] hover:text-[#F40026] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <FiRefreshCw
-              className={isFetching ? "animate-spin text-[#8EAC31]" : ""}
+              className={isFetching ? "animate-spin text-[#F40026]" : ""}
             />
             Refresh
           </button>
         </header>
 
-        <div className="space-y-6">
-          <LocationSection
-            currentLocation={currentLocation}
-            officeLocation={OFFICE_LOCATION}
-            officeRadiusMeters={OFFICE_RADIUS_METERS}
-            onGetMyLocation={handleGetMyLocation}
-            onPositionChange={setCurrentLocation}
-          />
-
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-            <AttendanceSummary
-              attendance={attendance}
-              date={todayData.date}
-              timeZone={timeZone}
-            />
+        {/* Dashboard columns */}
+        <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2 xl:gap-6">
+          {/* Attendance actions: first on mobile, right on desktop */}
+          <section className="order-1 min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:order-2">
+            <div className="mb-5">
+              <h2 className="text-lg font-bold text-[#030708]">
+                Attendance Actions
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Check in when you arrive and check out when you finish work.
+                Your location will be detected automatically.
+              </p>
+            </div>
 
             <AttendanceActions
               hasCheckedIn={hasCheckedIn}
@@ -232,6 +235,12 @@ export default function EmployeeDashboardPage() {
               isSubmitting={isSubmitting}
               isCheckingIn={checkInMutation.isPending}
               isCheckingOut={checkOutMutation.isPending}
+              isDetectingLocation={isDetectingLocation}
+              locationAction={locationAction}
+              currentLocation={currentLocation}
+              officeLocation={OFFICE_LOCATION}
+              officeRadiusMeters={OFFICE_RADIUS_METERS}
+              onPositionChange={setCurrentLocation}
               showCheckInReason={showCheckInReason}
               showCheckOutNote={showCheckOutNote}
               checkInReason={checkInReason}
@@ -241,6 +250,24 @@ export default function EmployeeDashboardPage() {
               onCheckOutNoteChange={setCheckOutNote}
               onCheckIn={handleCheckIn}
               onCheckOut={handleCheckOut}
+            />
+          </section>
+
+          {/* Today's timing: second on mobile, left on desktop */}
+          <section className="order-2 min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:order-1">
+            <div className="mb-5">
+              <h2 className="text-lg font-bold text-[#030708]">
+                Today's Attendance
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Your check-in and check-out activity for today.
+              </p>
+            </div>
+
+            <AttendanceSummary
+              attendance={attendance}
+              date={todayData.date}
+              timeZone={timeZone}
             />
           </section>
         </div>
