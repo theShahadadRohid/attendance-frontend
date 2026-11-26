@@ -108,7 +108,14 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Navigate to="/admin/login" replace />} />
+        <Route
+          path="/employee/login"
+          element={
+            <GuestRoute>
+              <EmployeeLoginPage />
+            </GuestRoute>
+          }
+        />
 
         {/* Guest routes */}
         <Route
