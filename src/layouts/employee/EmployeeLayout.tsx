@@ -149,9 +149,19 @@ export default function EmployeeLayout() {
       <div className="min-h-screen lg:pl-64">
         {/* Topbar */}
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6 lg:h-20 lg:px-8">
-          <div>
-            <p className="text-sm font-bold text-[#030708]">Lead Bangladesh</p>
-            <p className="text-xs text-slate-500">Employee Portal</p>
+          <div className="flex items-center gap-2.5">
+            <img
+              src={leadLogo}
+              alt="Lead Bangladesh"
+              className="h-10 w-10 -ml-1 shrink-0 rounded-lg object-contain"
+            />
+
+            <div>
+              <p className="text-sm font-bold text-[#030708]">
+                Lead Bangladesh
+              </p>
+              <p className="text-xs text-slate-500">Employee Portal</p>
+            </div>
           </div>
 
           {/* Desktop Employee Info */}
