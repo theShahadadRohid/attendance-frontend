@@ -178,7 +178,7 @@ export default function EmployeeLayout() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-300 bg-[#F5F2EE]/70 px-2 pt-2 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-300 bg-[#F5F2EE]/90 px-2 pt-2 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
         <div className="mx-auto grid max-w-lg grid-cols-4">
           {mobileNavigation.map((item) => {
             const Icon = item.icon;
