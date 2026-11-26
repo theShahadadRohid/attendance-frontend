@@ -73,6 +73,14 @@ export function AttendanceActions({
   return (
     <>
       <div className="space-y-5">
+        {/* Action error */}
+        {actionError && (
+          <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            <FiAlertCircle className="mt-0.5 shrink-0 text-base" />
+            <p>{actionError}</p>
+          </div>
+        )}
+
         {/* Check-in */}
         {!hasCheckedIn && (
           <div>
@@ -132,7 +140,7 @@ export function AttendanceActions({
 
             {checkInLocationReady && (
               <div className="mt-4 space-y-3">
-                <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
                   <FiMapPin className="shrink-0 text-[#F40026]" />
                   Location detected. Verify your position before checking in.
                 </div>
@@ -197,8 +205,8 @@ export function AttendanceActions({
 
             {checkOutLocationReady && (
               <div className="mt-4 space-y-3">
-                <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-                  <FiMapPin className="shrink-0 text-[#F40026]" />
+                <div className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-600 px-3 py-3 text-sm font-medium text-emerald-700">
+                  <FiMapPin className="shrink-0 text-emerald-700" />
                   Location detected. Verify your position before checking out.
                 </div>
 
@@ -226,14 +234,6 @@ export function AttendanceActions({
           </div>
         )}
       </div>
-
-      {/* Action error */}
-      {actionError && (
-        <div className="mt-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          <FiAlertCircle className="mt-0.5 shrink-0 text-base" />
-          <p>{actionError}</p>
-        </div>
-      )}
 
       {/* Location requirement */}
       <div className="mt-6 flex items-start gap-3 border-t border-slate-100 pt-5 text-xs leading-5 text-slate-500">
