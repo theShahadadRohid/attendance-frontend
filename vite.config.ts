@@ -13,7 +13,7 @@ export default defineConfig({
 
       manifest: {
         name: "Lead Bangladesh Attendance",
-        short_name: "Attendance",
+        short_name: "Lead BD",
         description: "Employee attendance management system",
 
         theme_color: "#F40026",
