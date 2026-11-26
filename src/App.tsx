@@ -108,14 +108,7 @@ function App() {
   return (
     <>
       <Routes>
-        <Route
-          path="/employee/login"
-          element={
-            <GuestRoute>
-              <EmployeeLoginPage />
-            </GuestRoute>
-          }
-        />
+        <Route path="/" element={<Navigate to="/employee/login" replace />} />
 
         {/* Guest routes */}
         <Route
