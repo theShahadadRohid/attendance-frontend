@@ -16,8 +16,8 @@ export function formatDate(value: string, timeZone: string) {
 
   return new Intl.DateTimeFormat("en-BD", {
     weekday: "long",
-    day: "numeric",
-    month: "long",
+    day: "2-digit",
+    month: "short",
     year: "numeric",
     timeZone,
   }).format(date);

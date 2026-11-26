@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FiAlertCircle, FiRefreshCw } from "react-icons/fi";
+import { FiAlertCircle, FiCalendar, FiRefreshCw } from "react-icons/fi";
 
 import { useAuth } from "../auth/useAuth";
 
@@ -10,6 +10,7 @@ import { AttendanceSummary } from "./components/AttendanceSummary";
 import { AttendanceActions } from "./components/AttendanceActions";
 import { useTodayAttendance } from "./hooks/useTodayAttendance";
 import { useAttendanceActions } from "./hooks/useAttendanceActions";
+import { formatDate } from "./utils/attendance-formatters";
 
 const OFFICE_LOCATION = {
   latitude: 22.359923,
@@ -220,13 +221,9 @@ export default function EmployeeDashboardPage() {
         <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2 xl:gap-6">
           {/* Attendance actions: first on mobile, right on desktop */}
           <section className="order-1 min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:order-2">
-            <div className="mb-5">
-              <h2 className="text-lg font-bold text-[#030708]">
-                Attendance Actions
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Check in or check out to record your attendance.
-              </p>
+            <div className="flex items-center gap-2 pb-5 text-sm font-semibold text-[#030708]">
+              <FiCalendar className="text-[#F40026]" />
+              <h2>{formatDate(todayData.date, timeZone)}</h2>
             </div>
 
             <AttendanceActions
@@ -255,15 +252,6 @@ export default function EmployeeDashboardPage() {
 
           {/* Today's timing: second on mobile, left on desktop */}
           <section className="order-2 min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:order-1">
-            <div className="mb-5">
-              <h2 className="text-lg font-bold text-[#030708]">
-                Today's Attendance
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Your check-in and check-out activity for today.
-              </p>
-            </div>
-
             <AttendanceSummary
               attendance={attendance}
               date={todayData.date}
