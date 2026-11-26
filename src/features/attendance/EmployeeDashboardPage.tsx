@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FiAlertCircle, FiCalendar, FiRefreshCw } from "react-icons/fi";
+import { FiAlertCircle, FiCalendar } from "react-icons/fi";
 
 import { useAuth } from "../auth/useAuth";
 
@@ -42,7 +42,7 @@ export default function EmployeeDashboardPage() {
     isError,
     error,
     refetch,
-    isFetching,
+    // isFetching,
   } = useTodayAttendance();
 
   const { checkInMutation, checkOutMutation, isSubmitting } =
@@ -204,7 +204,7 @@ export default function EmployeeDashboardPage() {
             </p>
           </div>
 
-          <button
+          {/* <button
             type="button"
             onClick={() => refetch()}
             disabled={isFetching}
@@ -214,7 +214,7 @@ export default function EmployeeDashboardPage() {
               className={isFetching ? "animate-spin text-[#F40026]" : ""}
             />
             Refresh
-          </button>
+          </button> */}
         </header>
 
         {/* Dashboard columns */}
