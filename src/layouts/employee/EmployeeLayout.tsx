@@ -5,7 +5,7 @@ import { useAuth } from "../../features/auth/useAuth";
 
 import { BiCalendarCheck, BiChevronRight, BiLogOut, BiX } from "react-icons/bi";
 import { LuLayoutDashboard, LuSettings } from "react-icons/lu";
-import { BsShieldCheck } from "react-icons/bs";
+import leadLogo from "../../assets/lead.png";
 
 const navigation = [
   {
@@ -71,13 +71,13 @@ export default function EmployeeLayout() {
     <>
       {/* Brand */}
       <div className="flex h-20 items-center gap-3 border-b border-white/10 px-6">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F40026] text-white">
-          <BsShieldCheck size={22} />
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl">
+          <img src={leadLogo} alt="" />
         </div>
 
         <div>
           <h1 className="text-base font-bold tracking-tight text-white">
-            Attendance
+            Lead Bangladesh
           </h1>
           <p className="text-xs text-white/50">Employee Portal</p>
         </div>
@@ -150,8 +150,8 @@ export default function EmployeeLayout() {
         {/* Topbar */}
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6 lg:h-20 lg:px-8">
           <div>
-            <p className="text-sm font-bold text-[#030708]">Employee Portal</p>
-            <p className="text-xs text-slate-500">Attendance management</p>
+            <p className="text-sm font-bold text-[#030708]">Lead Bangladesh</p>
+            <p className="text-xs text-slate-500">Employee Portal</p>
           </div>
 
           {/* Desktop Employee Info */}

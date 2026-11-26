@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../features/auth/useAuth";
-
+import leadLogo from "../../assets/lead.png";
 import { LuKeyRound, LuLayoutDashboard } from "react-icons/lu";
 import { FaCalendarDays, FaUser } from "react-icons/fa6";
 import {
@@ -12,7 +12,7 @@ import {
   BiMenu,
   BiX,
 } from "react-icons/bi";
-import { BsClipboardCheck, BsShieldCheck } from "react-icons/bs";
+import { BsClipboardCheck } from "react-icons/bs";
 
 const navigation = [
   {
@@ -82,13 +82,13 @@ export default function AdminLayout() {
     <>
       {/* Brand */}
       <div className="flex h-20 shrink-0 items-center gap-3 border-b border-white/10 px-5">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F40026] text-white">
-          <BsShieldCheck size={21} />
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl">
+          <img src={leadLogo} alt="" />
         </div>
 
         <div className="min-w-0">
           <h1 className="text-[15px] font-bold tracking-tight text-white">
-            Attendance
+            Lead Bangladesh
           </h1>
           <p className="mt-0.5 text-[11px] font-medium text-slate-400">
             Management System
@@ -208,7 +208,9 @@ export default function AdminLayout() {
             </button>
 
             <div className="min-w-0">
-              <p className="text-sm font-bold text-[#030708]">Admin Panel</p>
+              <p className="text-sm font-bold text-[#030708]">
+                Lead Bangladesh - Admin Panel
+              </p>
               <p className="mt-0.5 hidden text-xs text-slate-500 sm:block">
                 Attendance Management System
               </p>
