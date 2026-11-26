@@ -46,7 +46,7 @@ export function AttendanceActions({
   currentLocation,
   officeLocation,
   officeRadiusMeters,
-  onPositionChange,
+  // onPositionChange,
   showCheckInReason,
   showCheckOutNote,
   checkInReason,
@@ -142,7 +142,7 @@ export function AttendanceActions({
                     position={currentLocation}
                     officeLocation={officeLocation}
                     radiusMeters={officeRadiusMeters}
-                    onPositionChange={onPositionChange}
+                    // onPositionChange={onPositionChange}
                   />
                 </div>
               </div>
@@ -207,7 +207,7 @@ export function AttendanceActions({
                     position={currentLocation}
                     officeLocation={officeLocation}
                     radiusMeters={officeRadiusMeters}
-                    onPositionChange={onPositionChange}
+                    // onPositionChange={onPositionChange}
                   />
                 </div>
               </div>
