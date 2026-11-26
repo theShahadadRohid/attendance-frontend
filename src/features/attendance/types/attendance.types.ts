@@ -33,3 +33,29 @@ export interface AttendanceActionInput {
   reason?: string;
   note?: string;
 }
+
+export interface AttendanceEmployee {
+  _id: string;
+  employeeCode: string;
+  fullName: string;
+  phoneNumber: string;
+  employmentType?: string;
+  department?: string;
+}
+
+export interface AdminAttendanceRecord extends AttendanceRecord {
+  employee: AttendanceEmployee | null;
+}
+
+export interface AttendancePagination {
+  page: number;
+  limit: number;
+  totalRecords: number;
+  totalPages: number;
+}
+
+export interface AttendanceRecordsData {
+  date: string;
+  records: AdminAttendanceRecord[];
+  pagination: AttendancePagination;
+}

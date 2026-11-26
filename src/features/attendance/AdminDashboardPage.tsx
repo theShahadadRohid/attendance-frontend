@@ -1,86 +1,34 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { FaCalendarDays } from "react-icons/fa6";
+import { BiUserX } from "react-icons/bi";
+import { FiClock, FiRefreshCw } from "react-icons/fi";
 
 import { adminApi } from "../../lib/api";
+import { getErrorMessage } from "../../utils/getErrorMessage";
 
-import { FaUser } from "react-icons/fa";
-import { BiPhone, BiUserCheck, BiUserMinus, BiUserX } from "react-icons/bi";
-import { LuClock3 } from "react-icons/lu";
-import { FaCalendarDays, FaUserCheck } from "react-icons/fa6";
-import { FiRefreshCw } from "react-icons/fi";
+import type { ApiResponse } from "./types/attendance.types";
+import type { DashboardData } from "./types/dashboard.types";
 
-interface DashboardSummary {
-  totalEmployees: number;
-  present: number;
-  late: number;
-  absent: number;
-  notCheckedIn: number;
-}
+import DashboardSummaryCards from "./components/DashboardSummaryCards";
+import NotCheckedInEmployees from "./components/NotCheckedInEmployees";
+import { AttendanceRecordsTable } from "./components/AttendanceRecordsTable";
 
-interface NotCheckedInEmployee {
-  _id: string;
-  employeeCode: string;
-  fullName: string;
-  phoneNumber: string;
-  department?: string;
-}
+import { useAdminAttendanceRecords } from "./hooks/useAdminAttendanceRecords";
 
-interface DashboardData {
-  date: string;
-  summary: DashboardSummary;
-  notCheckedInEmployees: NotCheckedInEmployee[];
-}
-
-interface DashboardApiResponse {
-  message: string;
-  data: DashboardData;
-}
-
-function getLocalDateString() {
-  const now = new Date();
-
-  return [
-    now.getFullYear(),
-    String(now.getMonth() + 1).padStart(2, "0"),
-    String(now.getDate()).padStart(2, "0"),
-  ].join("-");
-}
-
-const cards = [
-  {
-    key: "totalEmployees",
-    label: "Total Employees",
-    icon: FaUser,
-  },
-  {
-    key: "present",
-    label: "Present",
-    icon: BiUserCheck,
-  },
-  {
-    key: "late",
-    label: "Late",
-    icon: LuClock3,
-  },
-  {
-    key: "absent",
-    label: "Absent",
-    icon: BiUserX,
-  },
-  {
-    key: "notCheckedIn",
-    label: "Not Checked In",
-    icon: BiUserMinus,
-  },
-] as const;
+import {
+  formatDashboardDate,
+  getLocalDateString,
+} from "./utils/dashboard-formatters";
 
 export default function AdminDashboardPage() {
   const [date, setDate] = useState(getLocalDateString);
 
+  // Dashboard summary query
   const dashboardQuery = useQuery({
     queryKey: ["admin-dashboard", date],
     queryFn: async () => {
-      const response = await adminApi.get<DashboardApiResponse>(
+      const response = await adminApi.get<ApiResponse<DashboardData>>(
         "/attendance/dashboard",
         { params: { date } },
       );
@@ -89,15 +37,24 @@ export default function AdminDashboardPage() {
     },
   });
 
-  const dashboard = dashboardQuery.data;
+  // Attendance records query
+  const attendanceQuery = useAdminAttendanceRecords({
+    date,
+    status: "",
+    search: "",
+    page: 1,
+  });
 
-  const formattedDate = dashboard
-    ? new Date(`${dashboard.date}T00:00:00`).toLocaleDateString("en-BD", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
-    : "";
+  const dashboard = dashboardQuery.data;
+  const attendanceRecords = attendanceQuery.data?.records ?? [];
+  const attendancePagination = attendanceQuery.data?.pagination;
+
+  const formattedDate = dashboard ? formatDashboardDate(dashboard.date) : "";
+
+  function handleRefresh() {
+    void dashboardQuery.refetch();
+    void attendanceQuery.refetch();
+  }
 
   return (
     <div className="w-full space-y-7">
@@ -135,30 +92,35 @@ export default function AdminDashboardPage() {
 
           <button
             type="button"
-            onClick={() => void dashboardQuery.refetch()}
-            disabled={dashboardQuery.isFetching}
+            onClick={handleRefresh}
+            disabled={dashboardQuery.isFetching || attendanceQuery.isFetching}
             className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-[#030708] transition hover:border-[#F40026] hover:text-[#F40026] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F40026]/20 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <FiRefreshCw
               size={15}
-              className={dashboardQuery.isFetching ? "animate-spin" : ""}
+              className={
+                dashboardQuery.isFetching || attendanceQuery.isFetching
+                  ? "animate-spin"
+                  : ""
+              }
             />
             Refresh
           </button>
         </div>
       </section>
 
-      {/* Loading state */}
+      {/* Dashboard loading state */}
       {dashboardQuery.isLoading && (
         <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-slate-200 bg-white p-8">
           <FiRefreshCw className="animate-spin text-2xl text-[#F40026]" />
+
           <p className="mt-3 text-sm font-medium text-slate-600">
             Loading dashboard...
           </p>
         </div>
       )}
 
-      {/* Error state */}
+      {/* Dashboard error state */}
       {dashboardQuery.isError && (
         <div className="rounded-xl border border-red-200 bg-white p-6">
           <div className="flex items-start gap-3">
@@ -172,7 +134,10 @@ export default function AdminDashboardPage() {
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Check your connection and Admin session, then try again.
+                {getErrorMessage(
+                  dashboardQuery.error,
+                  "Check your connection and Admin session, then try again.",
+                )}
               </p>
 
               <button
@@ -190,7 +155,7 @@ export default function AdminDashboardPage() {
       {/* Dashboard content */}
       {dashboard && (
         <>
-          {/* Attendance summary heading */}
+          {/* Attendance summary */}
           <section>
             <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
               <div>
@@ -206,103 +171,88 @@ export default function AdminDashboardPage() {
               </p>
             </div>
 
-            {/* Summary cards */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-              {cards.map((card) => {
-                const Icon = card.icon;
-                const value = dashboard.summary[card.key];
-
-                return (
-                  <div
-                    key={card.key}
-                    className="group rounded-xl border border-slate-200 bg-white p-5 transition duration-200 hover:border-slate-300 hover:shadow-sm"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-[13px] font-medium text-slate-500">
-                        {card.label}
-                      </p>
-
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-[#F40026]">
-                        <Icon size={18} />
-                      </div>
-                    </div>
-
-                    <p className="mt-4 text-3xl font-bold tracking-tight tabular-nums text-[#030708]">
-                      {value}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
+            <DashboardSummaryCards summary={dashboard.summary} />
           </section>
 
-          {/* Employees not checked in */}
-          <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <div className="flex flex-col justify-between gap-3 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:px-6">
-              <div>
-                <h2 className="text-base font-bold text-[#030708]">
-                  Employees Not Checked In
-                </h2>
+          {/* Daily attendance and employees not checked in */}
+          <section className="grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
+            {/* Today's attendance */}
+            <div className="min-w-0 lg:col-span-8">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h2 className="text-base font-bold text-[#030708]">
+                    Today's Attendance
+                  </h2>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  Employees without an attendance record for this date.
-                </p>
-              </div>
-
-              <span className="inline-flex w-fit items-center gap-2 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-[#F40026]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#F40026]" />
-                {dashboard.notCheckedInEmployees.length} employees
-              </span>
-            </div>
-
-            {dashboard.notCheckedInEmployees.length === 0 ? (
-              <div className="flex flex-col items-center justify-center px-5 py-12 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-600">
-                  <FaUserCheck size={21} />
+                  <p className="mt-1 text-sm text-slate-500">
+                    Employee check-in and check-out activity.
+                  </p>
                 </div>
 
-                <p className="mt-4 text-sm font-semibold text-[#030708]">
-                  Everyone is accounted for
-                </p>
-
-                <p className="mt-1 text-sm text-slate-500">
-                  There are no employees in this list for the selected date.
-                </p>
+                {attendancePagination && (
+                  <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 tabular-nums">
+                    {attendancePagination.totalRecords} records
+                  </span>
+                )}
               </div>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {dashboard.notCheckedInEmployees.map((employee) => (
-                  <div
-                    key={employee._id}
-                    className="flex flex-col justify-between gap-3 px-5 py-4 transition hover:bg-slate-50/70 sm:flex-row sm:items-center sm:px-6"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold uppercase text-slate-600">
-                        {employee.fullName.charAt(0)}
-                      </div>
 
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-[#030708]">
-                          {employee.fullName}
-                        </p>
-
-                        <p className="mt-1 text-xs text-slate-500">
-                          {employee.employeeCode}
-                          {employee.department
-                            ? ` · ${employee.department}`
-                            : ""}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 pl-[52px] text-sm text-slate-500 sm:pl-0">
-                      <BiPhone size={15} className="shrink-0" />
-                      <span>{employee.phoneNumber}</span>
-                    </div>
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                {attendanceQuery.isLoading ? (
+                  <div className="flex min-h-64 flex-col items-center justify-center gap-3 text-sm text-slate-500">
+                    <FiRefreshCw className="animate-spin text-xl text-[#F40026]" />
+                    Loading attendance records...
                   </div>
-                ))}
+                ) : attendanceQuery.isError ? (
+                  <div className="flex min-h-64 flex-col items-center justify-center px-5 text-center">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-[#F40026]">
+                      <FiClock size={20} />
+                    </div>
+
+                    <p className="mt-4 text-sm font-semibold text-[#030708]">
+                      Unable to load attendance
+                    </p>
+
+                    <p className="mt-1 max-w-md text-sm text-slate-500">
+                      {getErrorMessage(
+                        attendanceQuery.error,
+                        "Something went wrong while loading attendance.",
+                      )}
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() => void attendanceQuery.refetch()}
+                      className="mt-4 rounded-lg bg-[#F40026] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#D90022]"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                ) : attendanceRecords.length === 0 ? (
+                  <div className="flex min-h-64 flex-col items-center justify-center px-5 text-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                      <FiClock size={22} />
+                    </div>
+
+                    <p className="mt-4 text-sm font-semibold text-[#030708]">
+                      No attendance records found
+                    </p>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      There are no records for this date.
+                    </p>
+                  </div>
+                ) : (
+                  <AttendanceRecordsTable records={attendanceRecords} />
+                )}
               </div>
-            )}
+            </div>
+
+            {/* Employees not checked in */}
+            <div className="min-w-0 lg:col-span-4">
+              <NotCheckedInEmployees
+                employees={dashboard.notCheckedInEmployees}
+              />
+            </div>
           </section>
         </>
       )}

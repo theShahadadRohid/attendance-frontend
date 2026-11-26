@@ -13,7 +13,10 @@ interface ApiErrorResponse {
       };
 }
 
-export function getErrorMessage(error: unknown): string {
+export function getErrorMessage(
+  error: unknown,
+  fallback = "Something went wrong. Please try again.",
+): string {
   if (axios.isAxiosError<ApiErrorResponse>(error)) {
     const response = error.response?.data;
     const apiError = response?.error;
@@ -29,16 +32,12 @@ export function getErrorMessage(error: unknown): string {
         .join(" ");
     }
 
-    return (
-      apiError?.message ||
-      response?.message ||
-      "Login failed. Please check your credentials."
-    );
+    return apiError?.message || response?.message || error.message || fallback;
   }
 
   if (error instanceof Error) {
-    return error.message;
+    return error.message || fallback;
   }
 
-  return "Something went wrong. Please try again.";
+  return fallback;
 }
