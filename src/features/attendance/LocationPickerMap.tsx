@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Circle } from "react-leaflet";
 
@@ -13,18 +13,14 @@ interface LocationPickerMapProps {
   position: Coordinates;
   officeLocation: Coordinates;
   radiusMeters: number;
-  onPositionChange: (position: Coordinates) => void;
 }
 
-interface DraggableMarkerProps {
-  position: Coordinates;
-  onPositionChange: (position: Coordinates) => void;
-}
-
-function DraggableMarker({ position, onPositionChange }: DraggableMarkerProps) {
-  const markerRef = useRef<L.Marker>(null);
-
-  const icon = useMemo(
+export default function LocationPickerMap({
+  position,
+  officeLocation,
+  radiusMeters,
+}: LocationPickerMapProps) {
+  const employeeIcon = useMemo(
     () =>
       L.divIcon({
         className: "",
@@ -44,41 +40,6 @@ function DraggableMarker({ position, onPositionChange }: DraggableMarkerProps) {
     [],
   );
 
-  const eventHandlers = useMemo(
-    () => ({
-      dragend() {
-        const marker = markerRef.current;
-
-        if (!marker) return;
-
-        const { lat, lng } = marker.getLatLng();
-
-        onPositionChange({
-          latitude: lat,
-          longitude: lng,
-        });
-      },
-    }),
-    [onPositionChange],
-  );
-
-  return (
-    <Marker
-      ref={markerRef}
-      position={[position.latitude, position.longitude]}
-      draggable
-      icon={icon}
-      eventHandlers={eventHandlers}
-    />
-  );
-}
-
-export default function LocationPickerMap({
-  position,
-  officeLocation,
-  radiusMeters,
-  onPositionChange,
-}: LocationPickerMapProps) {
   return (
     <div className="space-y-3">
       <div className="overflow-hidden rounded-xl border">
@@ -93,7 +54,6 @@ export default function LocationPickerMap({
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          {/* Office 50-meter boundary */}
           <Circle
             center={[officeLocation.latitude, officeLocation.longitude]}
             radius={radiusMeters}
@@ -104,10 +64,11 @@ export default function LocationPickerMap({
             }}
           />
 
-          {/* Employee's draggable red marker */}
-          <DraggableMarker
-            position={position}
-            onPositionChange={onPositionChange}
+          {/* Employee's fixed GPS location marker */}
+          <Marker
+            position={[position.latitude, position.longitude]}
+            icon={employeeIcon}
+            interactive={false}
           />
         </MapContainer>
       </div>
