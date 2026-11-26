@@ -7,11 +7,7 @@ import {
 } from "react-icons/fi";
 
 import type { AttendanceRecord } from "../types/attendance.types";
-import {
-  formatDate,
-  formatTime,
-  getCheckInLabel,
-} from "../utils/attendance-formatters";
+import { formatTime, getCheckInLabel } from "../utils/attendance-formatters";
 import { AttendanceStatusBadge } from "./AttendanceStatusBadge";
 
 interface AttendanceSummaryProps {
@@ -22,9 +18,18 @@ interface AttendanceSummaryProps {
 
 export function AttendanceSummary({
   attendance,
-  date,
   timeZone,
 }: AttendanceSummaryProps) {
+  const checkInLate =
+    attendance?.checkInStatus === "late_yellow" ||
+    attendance?.checkInStatus === "late_red";
+
+  const checkOutLabel = attendance?.isAutoCheckout
+    ? "Automatically checked out"
+    : attendance?.checkOutStatus === "early"
+      ? "Early checkout"
+      : "Normal checkout";
+
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -33,104 +38,118 @@ export function AttendanceSummary({
             <FiCalendar className="text-[#F40026]" />
             Today's Attendance
           </div>
-
-          <h2 className="mt-1.5 text-lg font-bold tracking-tight text-[#030708]">
-            {formatDate(date, timeZone)}
-          </h2>
         </div>
 
         <AttendanceStatusBadge attendance={attendance} />
       </div>
 
       {/* Attendance timeline */}
-      <div className="relative mt-5 grid grid-cols-2 gap-3">
-        <div className="absolute left-[25%] right-[25%] top-[19px] h-0.5 bg-slate-200" />
+      <div className="relative mt-6 space-y-4">
+        {/* Connecting line */}
+        <div className="absolute bottom-8 left-[17px] top-8 w-px bg-slate-200" />
 
         {/* Check-in */}
-        <div className="relative rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
-          <div className="relative z-10 flex items-center gap-2 text-xs font-medium text-slate-500">
-            <span
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-4 border-white ${
-                attendance?.checkInAt
-                  ? "bg-[#F40026] text-white"
-                  : "bg-slate-200 text-slate-500"
-              }`}
-            >
-              <FiLogIn />
-            </span>
-            Check-in
+        <div className="relative flex items-start gap-3">
+          <div
+            className={`relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-4 border-white ${
+              attendance?.checkInAt
+                ? "bg-[#F40026] text-white"
+                : "bg-slate-200 text-slate-500"
+            }`}
+          >
+            <FiLogIn size={15} />
           </div>
 
-          <p className="mt-3 text-xl font-bold tracking-tight text-[#030708] sm:text-2xl">
-            {formatTime(attendance?.checkInAt, timeZone)}
-          </p>
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-[#030708]">Check-in</p>
 
-          {attendance?.checkInAt && (
-            <p
-              className={`mt-1.5 text-xs font-semibold ${
-                attendance.checkInStatus === "late_yellow" ||
-                attendance.checkInStatus === "late_red"
-                  ? "text-[#F40026]"
-                  : "text-slate-500"
-              }`}
-            >
-              {getCheckInLabel(attendance.checkInStatus)}
+              {attendance?.checkInAt ? (
+                <p
+                  className={`mt-1 text-xs font-medium ${
+                    checkInLate ? "text-[#F40026]" : "text-slate-500"
+                  }`}
+                >
+                  {getCheckInLabel(attendance.checkInStatus)}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-slate-400">
+                  Not checked in yet
+                </p>
+              )}
+            </div>
+
+            <p className="shrink-0 text-lg font-bold tracking-tight text-[#030708] sm:text-xl">
+              {formatTime(attendance?.checkInAt, timeZone)}
             </p>
-          )}
+          </div>
         </div>
 
         {/* Check-out */}
-        <div className="relative rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
-          <div className="relative z-10 flex items-center gap-2 text-xs font-medium text-slate-500">
-            <span
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-4 border-white ${
-                attendance?.checkOutAt
-                  ? "bg-[#030708] text-white"
-                  : "bg-slate-200 text-slate-500"
-              }`}
-            >
-              <FiLogOut />
-            </span>
-            Check-out
+        <div className="relative flex items-start gap-3">
+          <div
+            className={`relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-4 border-white ${
+              attendance?.checkOutAt
+                ? "bg-[#030708] text-white"
+                : "bg-slate-200 text-slate-500"
+            }`}
+          >
+            <FiLogOut size={15} />
           </div>
 
-          <p className="mt-3 text-xl font-bold tracking-tight text-[#030708] sm:text-2xl">
-            {formatTime(attendance?.checkOutAt, timeZone)}
-          </p>
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-[#030708]">Check-out</p>
 
-          {attendance?.checkOutAt && (
-            <p className="mt-1.5 text-xs font-medium text-slate-500">
-              {attendance.isAutoCheckout
-                ? "Automatically checked out"
-                : attendance.checkOutStatus === "early"
-                  ? "Early checkout"
-                  : "Normal checkout"}
+              {attendance?.checkOutAt ? (
+                <p className="mt-1 text-xs font-medium text-slate-500">
+                  {checkOutLabel}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-slate-400">
+                  Not checked out yet
+                </p>
+              )}
+            </div>
+
+            <p className="shrink-0 text-lg font-bold tracking-tight text-[#030708] sm:text-xl">
+              {formatTime(attendance?.checkOutAt, timeZone)}
             </p>
-          )}
+          </div>
         </div>
       </div>
 
       {/* Check-in reason */}
       {attendance?.checkInReason && (
-        <div className="mt-3 flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          <FiAlertCircle className="mt-0.5 shrink-0 text-[#F40026]" />
+        <div className="mt-4 rounded-xl border border-red-100 bg-red-50/60 p-3.5">
+          <div className="flex items-center gap-2">
+            <FiAlertCircle className="shrink-0 text-[#F40026]" size={15} />
 
-          <div>
-            <strong className="text-xs font-semibold">
+            <strong className="text-xs font-semibold text-[#030708]">
               Late check-in reason
             </strong>
-            <p className="mt-1 text-xs leading-5">{attendance.checkInReason}</p>
           </div>
+
+          <p className="mt-2 pl-[23px] text-sm leading-5 text-slate-600">
+            {attendance.checkInReason}
+          </p>
         </div>
       )}
 
       {/* Checkout note */}
       {attendance?.checkOutNote && (
-        <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
-          <strong className="text-xs font-semibold text-[#030708]">
-            Checkout note
-          </strong>
-          <p className="mt-1 text-xs leading-5">{attendance.checkOutNote}</p>
+        <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+          <div className="flex items-center gap-2">
+            <FiClock className="shrink-0 text-slate-500" size={15} />
+
+            <strong className="text-xs font-semibold text-[#030708]">
+              Checkout note
+            </strong>
+          </div>
+
+          <p className="mt-2 pl-[23px] text-sm leading-5 text-slate-600">
+            {attendance.checkOutNote}
+          </p>
         </div>
       )}
 
