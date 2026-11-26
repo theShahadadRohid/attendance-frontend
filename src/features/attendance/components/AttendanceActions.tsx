@@ -237,13 +237,9 @@ export function AttendanceActions({
 
       {/* Location requirement */}
       <div className="mt-6 flex items-start gap-3 border-t border-slate-100 pt-5 text-xs leading-5 text-slate-500">
-        <FiMapPin className="mt-0.5 shrink-0 text-[#F40026]" />
+        <FiMapPin className="mt-1 shrink-0 text-[#F40026]" />
 
-        <p>
-          Your browser location is required for check-in and check-out.
-          Attendance is accepted only when the submitted coordinates are within
-          the configured office radius.
-        </p>
+        <p>Your browser location is required for check-in and check-out.</p>
       </div>
     </>
   );

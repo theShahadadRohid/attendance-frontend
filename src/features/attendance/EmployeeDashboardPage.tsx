@@ -186,15 +186,16 @@ export default function EmployeeDashboardPage() {
         {/* Page header */}
         <header className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-5">
           <div>
-            <div className="mb-2 flex items-center gap-2">
+            {/* <div className="mb-2 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-[#F40026]" />
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
                 Employee Portal
               </p>
-            </div>
+            </div> */}
 
             <h1 className="text-2xl font-bold tracking-tight text-[#030708] sm:text-3xl">
-              Welcome, {employee?.fullName ?? "Employee"}
+              Welcome,{" "}
+              {employee?.fullName?.trim().split(/\s+/)[0] ?? "Employee"}
             </h1>
 
             <p className="mt-1.5 text-sm text-slate-500">
@@ -224,8 +225,7 @@ export default function EmployeeDashboardPage() {
                 Attendance Actions
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                Check in when you arrive and check out when you finish work.
-                Your location will be detected automatically.
+                Check in or check out to record your attendance.
               </p>
             </div>
 
